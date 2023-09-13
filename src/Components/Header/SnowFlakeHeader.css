@@ -1,0 +1,30 @@
+  /* #menu-icon {
+    display: none; 
+    cursor: pointer;
+    font-size: 20px; 
+    margin-right: 10px; 
+  } */
+/* @media (max-width: 1000px) {
+    #kt_header_nav {
+      display: none !important;
+    }    
+  } */
+ 
+  #menu-icon {
+    display: none;
+    cursor: pointer;
+    font-size: 20px;
+    margin-right: 10px;
+  }
+  
+  @media (max-width: 1000px) {
+    #menu-icon {
+      display: block; /* Change display to block when screen width is below 1000px */
+    }
+    
+    #kt_header_nav {
+      display: none !important;
+    }
+  }
+
+ 
