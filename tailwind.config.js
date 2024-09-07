@@ -2,7 +2,8 @@
 module.exports = {
   darkMode: 'class',
   content: [
-    "./src/**/*.{html,js}",
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html",
     "./node_modules/tw-elements/dist/js/**/*.js",
     "./node_modules/flowbite/**/*.js"
   ],
@@ -11,8 +12,8 @@ module.exports = {
       poppins: ["Poppins", "sans-serif"],
       poppinsBody: ["Poppins", "sans-serif"],
       sourceCodeStyle: ["Source Code Pro", "sans-serif"],
-      roboto:["Roboto", "sans-serif" ],
-      staatliches:["Staatliches", "sans-serif"]
+      roboto: ["Roboto", "sans-serif"],
+      staatliches: ["Staatliches", "sans-serif"]
     },
     screens: {
       sm: { min: "640px", max: "767px" },
@@ -21,6 +22,14 @@ module.exports = {
       xl: { min: "1280px" },
     },
     extend: {
+      animation: {
+        'border': 'border 4s linear infinite',
+    },
+    keyframes: {
+      'border': {
+          to: { '--border-angle': '360deg' },
+      }
+  },
       backgroundColor: {
         "main-dark-bg": "#000",
         "secondary-dark-bg": "#121212",

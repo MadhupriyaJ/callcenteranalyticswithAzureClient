@@ -1,30 +1,164 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./SnowflakeAside.css";
+import KTMenu from "../js/components/menu";
+import KTDrawer from "../js/components/drawer";
+import { useNavigate } from "react-router-dom";
+import KTScroll from "../js/components/scroll";
 
-const SnowflakeAside = () => {
+
+const SnowflakeAside = ({onTableSelect,setSelectedTable,selectedTable}) => {
+  // const [asideOpen, setAsideOpen] = useState(true);
+
+  // // Function to toggle the aside state
+  // const toggleAside = () => {
+  //   setAsideOpen((prevAsideOpen) => !prevAsideOpen);
+  // };
+  // const openNav = () => {
+  //   setAsideOpen(true);
+  // };
+
+  // const closeNav = () => {
+  //   setAsideOpen(false);
+  // };
+
   const [asideOpen, setAsideOpen] = useState(true);
+  const [tablename, setTablename] = useState([]);
+  const [dataTable, setDataTable] = useState(null);
+  const [tabledetails, setTabledetails] = useState([]);
+  const BASE_URL = process.env.REACT_APP_API_URL;
 
-  // Function to toggle the aside state
+  const tableRef = useRef();
+
+  const navigate = useNavigate();
+
+  // Function to handle the click event for "Users List"
+  const handleUserListClick = () => {
+    navigate("/List"); // Programmatically navigate to the /List route
+  };
+
+
+  const handleTableSelect = (tableName) => {
+  
+    navigate(`/${tableName}`);
+  };
+
+
+
+  useEffect(() => {
+    console.log("Fetching table names...");
+    fetchTablename();
+  }, []);
+
+ 
+  //To get All Table from server
+  const fetchTablename = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/gettablename`);
+      const data = await response.json();
+      console.log("Fetched table names for aside:", data);
+      setTablename(data);
+    } catch (error) {
+      console.error("Error fetching table names:", error);
+    }
+  };
+  
+  const fetchTableData = async (tableName) => {
+    try {
+      const response = await fetch(`${BASE_URL}/tablecategorieswithvalue`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tableName }),
+      });
+
+      const data = await response.json();
+      console.log("Fetched table data for", tableName, ":", data);
+      setTabledetails(data);
+
+      // Destroy the DataTable if it exists
+      if (dataTable !== null) {
+        dataTable.destroy();
+      }
+      onTableSelect(tableName); // Call the callback function to pass the selected table name
+
+      // Initialize DataTable for the current tableRef
+      const newDataTable = $(tableRef.current).DataTable({
+        searching: true, // Enable searching
+      });
+      console.log("DataTable initialized:", newDataTable);
+      setDataTable(newDataTable);
+    } catch (error) {
+      console.error("Error fetching table data:", error);
+    }
+  };
   const toggleAside = () => {
     setAsideOpen((prevAsideOpen) => !prevAsideOpen);
   };
   const openNav = () => {
     setAsideOpen(true);
   };
-
   const closeNav = () => {
     setAsideOpen(false);
   };
+  
+  // const tableNamesMapping = {
+  //   AdminandUserLogin: 'Login',
+  //   at_entity: 'Entity',
+  //   at_language: 'Language',
+  //   at_country: 'Country',
+  //   at_city: 'City',
+  //   at_city_zone: 'CityZone',
+  //   at_region: 'Region',
+  //   at_division: 'Division',
+  //   at_department: 'Department',
+  //   at_designation: 'Designation',
+  //   at_roles: 'Roles',
+  //   at_roles_desig: 'Roles Designation',
+  //   at_module: 'Module',
+  //   at_menu: 'Menu',
+  //   at_screen: 'Screen',
+  //   at_field: 'Field',
+  //   at_txns: 'Transactions',
+  //   at_user: 'User',
+  //   user_menus: 'User Menus',
+  //   user_screens: 'User Screens',
+  //   user_roles_design: 'User Roles Design',
+  //   user_roles_design_excep: 'User Roles Design Except',
+  //   at_userlogins: 'User Logins',
+  //   at_userlogins_screens: 'User Login Screens',
+  //   at_admin_logs: 'Admin Logs',
+  //   at_control: 'Control',
+  // };
+  
+  KTMenu.createInstances();
+  var menuElement = document.querySelector("#kt_menu");
+  var menu = KTMenu.getInstance(menuElement);
+  KTMenu.updateDropdowns();
+  KTMenu.updateByLinkAttribute("/users/group/add");
+  KTMenu.hideDropdowns();
+  KTDrawer.createInstances();
+  var drawerElement = document.querySelector("#kt_drawer_example_1");
+  var drawer = KTDrawer.getInstance(drawerElement);
+  KTDrawer.hideAll();
+  KTDrawer.updateAll();
+  KTScroll.createInstances();
+  
+  KTScroll.handleResize();
+  // KTAppSidebar.init();
+
+
+
 
   return (
     <div
-      className="{`aside ${asideOpen ? 'open' : ''}`}"
+      className={`aside ${asideOpen ? 'open' : ''}h-[100vh]`}
       onMouseEnter={openNav}
     >
       <div
         id="kt_aside"
-        className={`aside aside-white aside-hoverable mt-0 sidenav h-screen  ${
-          asideOpen ? "w-64" : "w-14"
+        className={`aside aside-white aside-hoverable mt-0 sidenav h-full ${
+          asideOpen ? "w-64 " : "w-14"
         } duration-300 h-full bg-slate-900 text-white relative`}
         data-kt-drawer="false"
         data-kt-drawer-name="aside"
@@ -117,12 +251,236 @@ const SnowflakeAside = () => {
             data-kt-scroll-offset="0"
             // style="height: 422px;"
           >
+
+
+            
             {/*<!--begin::Menu--> */}
             <div
               class="menu menu-column menu-title-gray-600 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500 "
               id="#kt_aside_menu"
               data-kt-menu="true"
             >
+
+ {/* playbook */}
+ <div class="menu-item">
+                <div class="menu-content pt-8 pb-2">
+                  {asideOpen && (
+                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">
+                      playbook
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div
+                data-kt-menu-trigger="click"
+                class="menu-item menu-accordion"
+              >
+                <span class="menu-link">
+                  <span class="menu-icon">
+                    {/*<!--begin::Svg Icon | path: icons/duotune/ecommerce/ecm007.svg--> */}
+                    <span class="svg-icon svg-icon-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <path
+                          d="M21 9V11C21 11.6 20.6 12 20 12H14V8H20C20.6 8 21 8.4 21 9ZM10 8H4C3.4 8 3 8.4 3 9V11C3 11.6 3.4 12 4 12H10V8Z"
+                          fill="white"
+                        ></path>
+                        <path
+                          d="M15 2C13.3 2 12 3.3 12 5V8H15C16.7 8 18 6.7 18 5C18 3.3 16.7 2 15 2Z"
+                          fill="white"
+                        ></path>
+                        <path
+                          opacity="0.3"
+                          d="M9 2C10.7 2 12 3.3 12 5V8H9C7.3 8 6 6.7 6 5C6 3.3 7.3 2 9 2ZM4 12V21C4 21.6 4.4 22 5 22H10V12H4ZM20 12V21C20 21.6 19.6 22 19 22H14V12H20Z"
+                          fill="white"
+                        ></path>
+                      </svg>
+                    </span>
+                    {/*<!--end::Svg Icon--> */}
+                  </span>
+                  <span class="menu-title">Pages</span>
+                  <span class="menu-arrow"></span>
+                </span>
+                <div class="menu-sub menu-sub-accordion menu-active-bg">               
+
+                  <div
+                    data-kt-menu-trigger="click"
+                    class="menu-item menu-accordion"
+                  >
+                    <span class="menu-link">
+                      <span class="menu-icon">
+                        {/* <!--begin::Svg Icon | path: icons/duotune/communication/com013.svg--> */}
+                    <span class="svg-icon svg-icon-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <path
+                          d="M6.28548 15.0861C7.34369 13.1814 9.35142 12 11.5304 12H12.4696C14.6486 12 16.6563 13.1814 17.7145 15.0861L19.3493 18.0287C20.0899 19.3618 19.1259 21 17.601 21H6.39903C4.87406 21 3.91012 19.3618 4.65071 18.0287L6.28548 15.0861Z"
+                          fill="white"
+                        ></path>
+                        <rect
+                          opacity="0.3"
+                          x="8"
+                          y="3"
+                          width="8"
+                          height="8"
+                          rx="4"
+                          fill="white"
+                        ></rect>
+                      </svg>
+                    </span>
+                {/* <!--end::Svg Icon--> */}
+                      </span>
+                      <span class="menu-title">Speech service</span>
+                      <span class="menu-arrow"></span>
+                    </span>
+                    {/* playbook side menu start  */}
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/transcribe"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Transcribe</span>
+                        </a>
+                      </div>
+                    </div>
+                    {/* BSTT */}
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/Batchspeechtotext"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Batch Speech To Text</span>
+                        </a>
+                      </div>
+                    </div>
+                    {/* REALTIME SPEECH TO TEXT */}
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/speechtotext"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Real Time Speech To Text</span>
+                        </a>
+                      </div>
+                    </div>
+                    {/* TEXT TO SPEECH */}
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/texttospeech"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Text To Speech</span>
+                        </a>
+                      </div>
+                    </div>
+
+                     {/* LANGUAGE SUMMERIZATION */}
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/LanguageSummerization"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Language summerise information</span>
+                        </a>
+                      </div>
+                    </div> */}
+                    {/* DETECT LANGUAGE */}
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/DetectLanguage"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Detect Language</span>
+                        </a>
+                      </div>
+                    </div> */}
+                    {/* Analyze sentiment with Openion mining */}
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/SentimentAnalysis"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Analyze sentiment with Openion mining</span>
+                        </a>
+                      </div>
+                    </div> */}
+                    {/* Personally Identified Information */}
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/PII"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Personally Identified Information</span>
+                        </a>
+                      </div>
+                    </div> */}
+                    {/* Document Translation */}
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
+                      <div class="menu-item">
+                        <a
+                          class="menu-link"
+                          href="/DocumentTranslation"
+                        >
+                          <span class="menu-bullet">
+                            <span class="bullet bullet-dot"></span>
+                          </span>
+                          <span class="menu-title">Document Translation</span>
+                        </a>
+                      </div>
+                    </div> */}
+                  </div>
+
+                </div>
+                {/*<!--end::Menu--> */}
+              </div>
+              {/* playbook end */}
+
+
+{/* Dashboard */}
+
               <div class="menu-item  ">
                 <div class="menu-content pb-2">
                   {asideOpen && (
@@ -137,7 +495,7 @@ const SnowflakeAside = () => {
                   <span class="menu-icon ">
                     {/*<!--begin::Svg Icon | path: icons/duotune/general/gen025.svg--> */}
                     <span class="svg-icon svg-icon-2 ">
-                      <svg
+                      {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
                         height="24"
@@ -179,46 +537,21 @@ const SnowflakeAside = () => {
                           rx="2"
                           fill="white"
                         ></rect>
-                      </svg>
+                      </svg> */}
                     </span>
                     {/*<!--end::Svg Icon--> */}
                   </span>
-                  <span class="menu-title ">Administrator</span>
+                  {/* <span class="menu-title ">Administrator</span> */}
                 </a>
               </div>
-              <div class="menu-item">
-                <a class="menu-link active" href="#">
-                  <span class="menu-icon">
-                    {/*<!--begin::Svg Icon | path: icons/duotune/art/art002.svg--> */}
-                    <span class="svg-icon svg-icon-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="25"
-                        viewBox="0 0 24 25"
-                        fill="none"
-                      >
-                        <path
-                          opacity="0.3"
-                          d="M8.9 21L7.19999 22.6999C6.79999 23.0999 6.2 23.0999 5.8 22.6999L4.1 21H8.9ZM4 16.0999L2.3 17.8C1.9 18.2 1.9 18.7999 2.3 19.1999L4 20.9V16.0999ZM19.3 9.1999L15.8 5.6999C15.4 5.2999 14.8 5.2999 14.4 5.6999L9 11.0999V21L19.3 10.6999C19.7 10.2999 19.7 9.5999 19.3 9.1999Z"
-                          fill="white"
-                        ></path>
-                        <path
-                          d="M21 15V20C21 20.6 20.6 21 20 21H11.8L18.8 14H20C20.6 14 21 14.4 21 15ZM10 21V4C10 3.4 9.6 3 9 3H4C3.4 3 3 3.4 3 4V21C3 21.6 3.4 22 4 22H9C9.6 22 10 21.6 10 21ZM7.5 18.5C7.5 19.1 7.1 19.5 6.5 19.5C5.9 19.5 5.5 19.1 5.5 18.5C5.5 17.9 5.9 17.5 6.5 17.5C7.1 17.5 7.5 17.9 7.5 18.5Z"
-                          fill="white"
-                        ></path>
-                      </svg>
-                    </span>
-                    {/*<!--end::Svg Icon--> */}
-                  </span>
-                  <span class="menu-title">Roles</span>
-                </a>
-              </div>
+              
 
-              <div class="menu-item">
+              <div data-kt-menu-trigger="click"
+                class="menu-item menu-accordion"
+              >
                 <a
                   class="menu-link"
-                  href="../../demo1/dist/dashboards/only-header.html"
+                  // href="../../demo1/dist/dashboards/only-header.html"
                 >
                   <span class="menu-icon">
                     {/*<!--begin::Svg Icon | path: icons/duotune/layouts/lay010.svg--> */}
@@ -243,10 +576,84 @@ const SnowflakeAside = () => {
                     </span>
                     {/*<!--end::Svg Icon--> */}
                   </span>
-                  <span class="menu-title">Only Header</span>
-                </a>
-              </div>
 
+                  <span class="menu-title">Only Header</span>
+                  <span class="menu-arrow" ></span>
+                </a>
+
+                <div class="menu-sub menu-sub-accordion menu-active-bg">
+                <div
+                    data-kt-menu-trigger="click"
+                    class="menu-item menu-accordion"
+                  >
+                    <span class="menu-link">
+                      <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                      </span>
+                      <span class="menu-title">
+                      <a href="/customer">Data Tables</a>
+                      </span>
+                      <span class="menu-arrow" ></span>
+                    </span>
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
+                    {tablename.map((table, index) => (
+                <div class="menu-item"
+                 key={index}>
+                  <p class="menu-link" 
+                  onClick={() => {fetchTableData(table.TABLE_NAME)
+                    handleTableSelect(table.TABLE_NAME)}}
+                  >
+                    <span class="menu-icon ">
+                     
+                      <span class="svg-icon svg-icon-2 ">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M11.2929 2.70711C11.6834 2.31658 12.3166 2.31658 12.7071 2.70711L15.2929 5.29289C15.6834 5.68342 15.6834 6.31658 15.2929 6.70711L12.7071 9.29289C12.3166 9.68342 11.6834 9.68342 11.2929 9.29289L8.70711 6.70711C8.31658 6.31658 8.31658 5.68342 8.70711 5.29289L11.2929 2.70711Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            d="M11.2929 14.7071C11.6834 14.3166 12.3166 14.3166 12.7071 14.7071L15.2929 17.2929C15.6834 17.6834 15.6834 18.3166 15.2929 18.7071L12.7071 21.2929C12.3166 21.6834 11.6834 21.6834 11.2929 21.2929L8.70711 18.7071C8.31658 18.3166 8.31658 17.6834 8.70711 17.2929L11.2929 14.7071Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            opacity="0.3"
+                            d="M5.29289 8.70711C5.68342 8.31658 6.31658 8.31658 6.70711 8.70711L9.29289 11.2929C9.68342 11.6834 9.68342 12.3166 9.29289 12.7071L6.70711 15.2929C6.31658 15.6834 5.68342 15.6834 5.29289 15.2929L2.70711 12.7071C2.31658 12.3166 2.31658 11.6834 2.70711 11.2929L5.29289 8.70711Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            opacity="0.3"
+                            d="M17.2929 8.70711C17.6834 8.31658 18.3166 8.31658 18.7071 8.70711L21.2929 11.2929C21.6834 11.6834 21.6834 12.3166 21.2929 12.7071L18.7071 15.2929C18.3166 15.6834 17.6834 15.6834 17.2929 15.2929L14.7071 12.7071C14.3166 12.3166 14.3166 11.6834 14.7071 11.2929L17.2929 8.70711Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </span>
+              
+                    </span>
+                    <a
+                      class="menu-title"
+                      // key={index}
+                      // value={table.TABLE_NAME}
+                      // href="/customer"
+                    >
+                      {table.TABLE_NAME}
+                    </a>
+                  </p>
+                </div>
+              ))}
+                    </div> */}
+                  </div>
+                  </div>
+                
+              </div>
+            
+             
+              {/* crafted */}
               <div class="menu-item">
                 <div class="menu-content pt-8 pb-2">
                   {asideOpen && (
@@ -256,6 +663,7 @@ const SnowflakeAside = () => {
                   )}
                 </div>
               </div>
+              
               <div
                 data-kt-menu-trigger="click"
                 class="menu-item menu-accordion"
@@ -292,6 +700,22 @@ const SnowflakeAside = () => {
                   <span class="menu-arrow"></span>
                 </span>
                 <div class="menu-sub menu-sub-accordion menu-active-bg">
+                <div
+                    data-kt-menu-trigger="click"
+                    class="menu-item menu-accordion"
+                  >
+                    <span class="menu-link">
+                      <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                      </span>
+                      <span class="menu-title">
+                      <a href="/customer">Data Tables</a></span>
+                      <span class="menu-arrow" ></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                    
+                    </div>
+                  </div>
                   <div
                     data-kt-menu-trigger="click"
                     class="menu-item menu-accordion"
@@ -372,7 +796,7 @@ const SnowflakeAside = () => {
                       </div>
                     </div>
                   </div>
-                  {/* <div
+                  <div
                     data-kt-menu-trigger="click"
                     class="menu-item menu-accordion"
                   >
@@ -582,7 +1006,7 @@ const SnowflakeAside = () => {
                       </div>
                     </div>
                   </div>
-                  <div
+                   {/*<div
                     data-kt-menu-trigger="click"
                     class="menu-item menu-accordion"
                   >
@@ -742,7 +1166,7 @@ const SnowflakeAside = () => {
                   >
                     <span class="menu-link">
                       <span class="menu-icon">
-                        {/*<!--begin::Svg Icon | path: icons/duotune/communication/com013.svg-->
+                        {/* <!--begin::Svg Icon | path: icons/duotune/communication/com013.svg--> */}
                     <span class="svg-icon svg-icon-2">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -766,7 +1190,7 @@ const SnowflakeAside = () => {
                         ></rect>
                       </svg>
                     </span>
-                    {/*<!--end::Svg Icon--> */}
+                {/* <!--end::Svg Icon--> */}
                       </span>
                       <span class="menu-title">Account</span>
                       <span class="menu-arrow"></span>
@@ -974,9 +1398,11 @@ const SnowflakeAside = () => {
                         </span>
                         <div class="menu-sub menu-sub-accordion">
                           <div class="menu-item">
+                            {/* List.js */}
                             <a
                               class="menu-link"
-                              href="../../demo1/dist/apps/user-management/users/list.html"
+                              // href=""
+                              onClick={handleUserListClick}
                             >
                               <span class="menu-bullet">
                                 <span class="bullet bullet-dot"></span>
@@ -1047,7 +1473,7 @@ const SnowflakeAside = () => {
                     </div>
                   </div>
                   {/* User Management */}
-
+{/* chat */}
                   <div
                     data-kt-menu-trigger="click"
                     class="menu-item menu-accordion"
@@ -1127,6 +1553,7 @@ const SnowflakeAside = () => {
                       </div>
                     </div>
                   </div>
+                  {/* chat */}
                   <div class="menu-item">
                     <div class="menu-content pt-8 pb-0">
                       {asideOpen && (
@@ -1136,7 +1563,8 @@ const SnowflakeAside = () => {
                       )}
                     </div>
                   </div>
-
+{/* chat */}
+{/* Aside */}
                   <div
                     data-kt-menu-trigger="click"
                     class="menu-item menu-accordion"
@@ -1205,12 +1633,29 @@ const SnowflakeAside = () => {
                     </div>
                   </div>
 
-                  <div class="menu-item">
+                  {/* <div class="menu-item">
                     <div class="menu-content">
                       <div class="separator mx-1 my-4"></div>
                     </div>
+                  </div> */}
+                  
+                </div>
+                {/*<!--end::Menu--> */}
+              </div>
+              {/*<!--end::Aside Menu--> */}
+            </div>
+            {/*<!--end::Aside menu--> */}
+            {/*<!--begin::Footer--> */}
+           
+            {/*<!--end::Footer--> */}
+          </div>
+{/* footer */}
+<div class="menu-item ">
+                    <div class="menu-content">
+                      <div class="separator "></div>
+                    </div>
                   </div>
-                  <div class="menu-item">
+<div class="menu-item">
                     <a
                       class="menu-link"
                       href="../../demo1/dist/documentation/getting-started/changelog.html"
@@ -1241,15 +1686,8 @@ const SnowflakeAside = () => {
                       <span class="menu-title">Changelog v8.0.25</span>
                     </a>
                   </div>
-                </div>
-                {/*<!--end::Menu--> */}
-              </div>
-              {/*<!--end::Aside Menu--> */}
-            </div>
-            {/*<!--end::Aside menu--> */}
-            {/*<!--begin::Footer--> */}
-            <div
-              class="aside-footer flex-column-auto p-4 "
+          <div
+              class="aside-footer flex-column-auto p-4  "
               id="kt_aside_footer"
             >
               <a
@@ -1289,8 +1727,7 @@ const SnowflakeAside = () => {
                 {/*<!--end::Svg Icon--> */}
               </a>
             </div>
-            {/*<!--end::Footer--> */}
-          </div>
+            {/* footer end */}
           {/* <button
         variant="light"
         style={{
@@ -1308,6 +1745,7 @@ const SnowflakeAside = () => {
       </button> */}
         </div>
       </div>
+
     </div>
   );
 };

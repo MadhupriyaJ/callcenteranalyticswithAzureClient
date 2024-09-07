@@ -1,120 +1,164 @@
+
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const Login = ({ setAuthenticated }) => {
-    const navigate = useNavigate();
-    const location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const [email, setEmail] = useState("");
-    const [passwordHash, setPasswordHash] = useState("");
-    const [errors, setErrors] = useState({});
-    const [showPassword, setShowPassword] = useState(false);
-    const [bgVideo, setBgVideo] = useState(true);
-  
-    
-    const signIn = async (e) => {
-      e.preventDefault();
-      console.log("Email:", email);
-      console.log("Password:", passwordHash);
-   
-  
-      try {
-        const response = await fetch("/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, passwordHash }),
-        });
-  
-        if (response.ok) {
-         
-          
-          setAuthenticated(true);
+  const [email, setEmail] = useState("");
+  const [passwordHash, setPasswordHash] = useState("");
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [bgVideo, setBgVideo] = useState(true);
+  const [userName, setUserName] = useState("");
 
-          // Check if the user is an admin or master based on the email
-          const isAdmin = email === "shahul@hotmail.com" || email.endsWith("@admin.com");
-          const isitd = email.endsWith(".itd@gmail.com");
-          const isbusinesspandp  = email.endsWith(".business.pandp@gmail.com");
-          const isbusinessfinance  = email.endsWith(".business.finance@gmail.com");
-          const isbusinessaccount = email.endsWith(".business.accounts@gmail.com");
-          const isbusinessaudit = email.endsWith(".business.audit@gmail.com");
-          const ishr = email.endsWith(".hr@gmail.com");
-          const iscustomer = email.endsWith("@gmail.com");
-       
-         
+  const signIn = async (e) => {
+    e.preventDefault();
+    console.log("Email:", email);
+    console.log("Password:", passwordHash);
 
-          if (isAdmin) {
-            console.log("Redirecting to admin_page reports...");
-            navigate("/admin_page");
-          } else if (isitd) {
-            console.log("Redirecting to itdstaff page...");
-            navigate("/itdstaff");
-          }  else if (isbusinesspandp) {
-            console.log("Redirecting to itdstaff page...");
-            navigate("/pandpprocedure");
-          } else if (isbusinessfinance) {
-            console.log("Redirecting to itdstaff page...");
-            navigate("/finance");
-          } 
-          else if (isbusinessaccount) {
-            console.log("Redirecting to itdstaff page...");
-            navigate("/accounts");
-          }  else if (isbusinessaudit) {
-            console.log("Redirecting to itdstaff page...");
-            navigate("/audit");
-          }  else if (ishr) {
-            console.log("Redirecting to itdstaff page...");
-            navigate("/HRpage");
-          }  else if (iscustomer) {
-          
-            console.log("Redirecting to itdstaff page...");
-            navigate(`/snowflake`);
-           
-          } 
-  
-          else {
-            if (location.pathname === "/reports") {
-              console.log("You are not authorized to access this page.");
-            } else {
-              const { from } = location.state || {
-                from: { pathname: "/user_homepage" },
-              };
-              console.log("Redirecting to:", from);
-              navigate(from);
-            }
-          }
-        } else {
-          const errorData = await response.json();
-          throw new Error(errorData.error);
+    try {
+      const response = await fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, passwordHash }),
+      });
+
+      const responseData = await response.json()
+      console.log("Username", responseData.userName)
+
+      if (response.ok) {
+        setAuthenticated(true);
+        setUserName(responseData.userName)
+        localStorage.setItem("authenticated", "true");
+        localStorage.setItem("userRole", "customer");
+
+        // Check if the user is an admin or master based on the email
+        const isAdmin = email === "shahul@hotmail.com" || email.endsWith("@admin.com");
+        const isitd = email.endsWith(".itd@gmail.com");
+        const isbusinesspandp = email.endsWith(".business.pandp@gmail.com");
+        const isbusinessfinance = email.endsWith(".business.finance@gmail.com");
+        const isbusinessaccount = email.endsWith(".business.accounts@gmail.com");
+        const isbusinessaudit = email.endsWith(".business.audit@gmail.com");
+        const ishr = email.endsWith(".hr@gmail.com");
+        const iscustomer = email.endsWith("@gmail.com");
+
+        if (isAdmin) {
+          console.log("Redirecting to admin_page reports...");
+          const userRoles = ["isAdmin"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "admin");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/admin_page");
+
+        } else if (isitd) {
+          console.log("Redirecting to itdstaff page...");
+          const userRoles = ["isitd"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "itdstaff");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/itdstaff");
+
+        } else if (isbusinesspandp) {
+          console.log("Redirecting to businesspandp page...");
+          navigate("/pandpprocedure");
+
+        } else if (isbusinessfinance) {
+          console.log("Redirecting to businessfinance page...");
+          const userRoles = ["isbusinessfinance"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "businessfinance");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/finance");
+
+        } else if (isbusinessaccount) {
+          console.log("Redirecting to businessaccount page...");
+          const userRoles = ["isbusinessaccount"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "businessaccount");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/accounts");
+
+        } else if (isbusinessaudit) {
+          console.log("Redirecting to businessaudit page...");
+          const userRoles = ["isbusinessaudit"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "audit");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/audit");
+
+        } else if (ishr) {
+          console.log("Redirecting to hr page...");
+          const userRoles = ["ishr"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "hr");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/HRpage");
+
+        } else if (iscustomer) {
+          console.log("Redirecting to customer page...");
+          // navigate(`/snowflake`);
+          const userRoles = ["iscustomer"];
+          localStorage.setItem("authenticated", "true");
+          localStorage.setItem("userRole", "customer");
+          localStorage.setItem("userName", responseData.userName);
+          localStorage.setItem("userRoles", JSON.stringify(userRoles));
+          navigate("/Batchspeechtotext", { state: { userName: responseData.userName } });
         }
-      } catch (error) {
-        alert(error.message);
+
+        else {
+          if (location.pathname === "/reports") {
+            console.log("You are not authorized to access this page.");
+          } else {
+            const { from } = location.state || {
+              from: { pathname: "/user_homepage" },
+            };
+            console.log("Redirecting to:", from);
+            navigate(from);
+          }
+        }
+      } else {
+        localStorage.removeItem("authenticated");
+        const errorData = await response.json();
+        throw new Error(errorData.error);
       }
-    };
-  
-    const toggleShowPassword = () => {
-      setShowPassword(!showPassword);
-    };
-    const bgThemeSwitch = () => {
-      setBgVideo(!bgVideo);
-    };
-  
-    const navigateToRegister = () => {
-      navigate("/register"); 
-    };
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+  const bgThemeSwitch = () => {
+    setBgVideo(!bgVideo);
+  };
+
+  const navigateToRegister = () => {
+    navigate("/register");
+  };
 
   return (
     <div class="d-flex flex-column flex-root">
       <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed ">
         <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20 ">
-          <a href="../../demo1/dist/index.html" class="mb-12">
+          {/* <a href="../../demo1/dist/index.html" class="mb-12">
             <img
               alt="Logo"
               src="https://cdn-ehkcj.nitrocdn.com/jNvWlyDKiTewoPhgmESQyjXHnnzLhaun/assets/images/optimized/rev-95b4f45/www.techvista.com/wp-content/themes/systems/assets/images/logo-techvista.png"
               class="h-40px bg-danger rounded-lg px-4  "
             />
-          </a>
+          </a> */}
           <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
             <form
               class="form w-100"
@@ -123,10 +167,10 @@ const Login = ({ setAuthenticated }) => {
               action="#"
             >
               <div class="text-center mb-10">
-                <h1 class="text-dark mb-3 font-semibold text-3xl">Sign In to Techvista</h1>
+                <h1 class="text-dark mb-3 font-semibold text-3xl">Sign In</h1>
 
                 <div class="text-gray-400 fw-bold fs-4">
-                  New Here?  
+                  New Here?
                   <a
                     href="/register"
                     class="link-primary pl-2 fw-bolder"
@@ -237,7 +281,7 @@ const Login = ({ setAuthenticated }) => {
         </div>
       </div>
     </div>
-    
+
   );
 };
 

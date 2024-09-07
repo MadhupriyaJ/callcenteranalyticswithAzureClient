@@ -1,15 +1,38 @@
+
 import React, { useEffect, useState } from "react";
-
-
-
+import { useLocation } from "react-router-dom";
 
 const AddScreen = ({ errorMessage, setErrorMessage }) => {
-  const [tablename, setTablename] = useState([]);
-  const [selectedTable, setSelectedTable] = useState("");
   const [tableCategories, setTableCategories] = useState([]);
-  const [formData, setFormData] = useState({}); // State to hold input values
-  const [popupMessage, setPopupMessage] = useState(null); // State for pop-up message
+  const [formData, setFormData] = useState({});
+  const [popupMessage, setPopupMessage] = useState(null);
+  const [selectedTable, setSelectedTable] = useState("");
+  const location = useLocation();
+  const tableName = location.pathname.split("/").pop(); // Extract tableName from location
+  const BASE_URL = process.env.REACT_APP_API_URL;
+  useEffect(() => {
+    // Fetch categories based on the tableName from the location
+    fetchTableCategories(tableName);
+  }, [tableName]);
 
+  const fetchTableCategories = async (tableName) => {
+    try {
+      console.log("Fetching categories for tableName:", tableName); // Check if tableName is correct
+      const response = await fetch(`${BASE_URL}/tablenamecategories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tableName }), // Send the extracted tableName
+      });
+      console.log("Response from backend:", response);
+      const data = await response.json();
+      console.log("Fetched categories from backend:", data.categories); // Check if categories are correctly fetched
+      setTableCategories(data.categories);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchTablename();
@@ -17,32 +40,9 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
 
   const fetchTablename = async () => {
     try {
-      const response = await fetch("/gettablename");
+      const response = await fetch(`${BASE_URL}/gettablename`);
       const data = await response.json();
       setTablename(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleTableChange = async (event) => {
-    const selectedTableName = event.target.value;
-    setSelectedTable(selectedTableName);
-
-    try {
-      const response = await fetch("/tablenamecategories", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ tableName: selectedTableName }),
-      });
-      const data = await response.json();
-      console.log("Fetched categories from backend:", data.categories); // Log fetched categories
-
-      setTableCategories(data.categories); // This line updates the state with the fetched categories
-
-      console.log("Updated tableCategories state:", tableCategories); // Log updated state
     } catch (error) {
       console.log(error);
     }
@@ -59,7 +59,6 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Check if all required fields are filled
     const requiredFields = tableCategories.filter(
       (category) => category.required
     );
@@ -69,21 +68,16 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
 
     if (!isAllFieldsFilled) {
       setErrorMessage("Please fill in all required fields.");
-      return; // Exit the function without reloading
+      return;
     }
 
     try {
-      console.log("Form data to be submitted:", formData); // Log form data
-
       const dataToSend = {
-        tableName: selectedTable,
+        tableName: tableName,
         dataToInsert: formData,
       };
 
-      console.log("Data to be sent to backend:", dataToSend); // Log data with tableName
-
-      // Send formData to your backend for database insertion
-      const response = await fetch("/insertData", {
+      const response = await fetch(`${BASE_URL}/insertData`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,45 +85,25 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
         body: JSON.stringify(dataToSend),
       });
       const responseData = await response.json();
-      console.log("Response from backend:", responseData);
-      // setErrorMessage("Data insertion failed. Please try again");
-      // if (responseData.success) {
-        // window.location.reload(); 
-      // } 
-      // else {
-      //   setErrorMessage("Data insertion failed. Please try again.");
-      // }
-      if (responseData.message === 'Data inserted successfully') {
-        // Data insertion succeeded
-        console.log("Data inserted successfully");
+
+      if (responseData.message === "Data inserted successfully") {
         setPopupMessage("Data inserted successfully.");
-        setErrorMessage(null); 
-        
+        setErrorMessage(null);
       } else {
-        // Data insertion failed
-        console.log("Data insertion failed");
         setPopupMessage("Data insertion failed. Please try again.");
       }
-   
     } catch (error) {
       console.log(error);
-     
     }
   };
-  console.log("Rendering AddScreen component"); // Log when component renders
 
   const closePopup = () => {
-    // Close the pop-up message
     setPopupMessage(null);
   };
 
   const handleReset = (event) => {
     event.preventDefault();
-  
-    // Reset the formData and checkboxValues state to empty objects
     setFormData({});
-  
-    // Optionally, you can also clear the selectedTable state if needed
     setSelectedTable("");
   };
 
@@ -169,23 +143,12 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
             </div>
             <div className="modal-body scroll h-500px">
               <form>
-                <label className="fs-6 fw-semibold form-label mt-3">
-                  <span className="required">Select Table</span>
+                <div className="text-center">
+                  <label className="fs-6 fw-semibold form-label mt-3">
+                <span className="required text-left">Table name: {tableName}</span>
                 </label>
-                <select
-                  className="form-select form-select-solid required"
-                  aria-label="Select example"
-                  onChange={handleTableChange}
-                  value={selectedTable}
-                >
-                  <option value=""></option>
-                  {tablename.map((table, index) => (
-                    <option key={index} value={table.TABLE_NAME}>
-                      {table.TABLE_NAME}
-                    </option>
-                  ))}
-                </select>
-                {/* Render table categories here */}
+                </div>
+                
                 {tableCategories.map((category, index) => (
                   <div key={index}>
                     <label className="fs-6 fw-semibold form-label mt-3">
@@ -194,9 +157,9 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
                     <input
                       type="text"
                       className="form-control form-control-solid"
-                      name={category} // Using original category name as input name
-                      value={formData[category] || ""} // Bind input value to state
-                      onChange={handleInputChange} // Handle input changes
+                      name={category}
+                      value={formData[category] || ""}
+                      onChange={handleInputChange}
                       required
                       aria-invalid={errorMessage ? "true" : "false"}
                       aria-describedby={`error-${category}`}
@@ -210,40 +173,45 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
                 )}
               </form>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" onClick={handleReset}>
-                Discard
-              </button>
-              <div> <button
-                onClick={handleSubmit}
-                type="button"
-                class="btn btn-primary"
-              >
-                Save changes
-              </button>
-              {popupMessage && (
-        <div className="modal fade show" style={{ display: "block" }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-body">
-                {popupMessage}
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={closePopup}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-              </div>
-             
+            <div className="modal-footer">
               <button
                 type="button"
-                class="btn btn-light-danger"
+                className="btn btn-secondary"
+                onClick={handleReset}
+              >
+                Discard
+              </button>
+              <div>
+                {" "}
+                <button
+                  onClick={handleSubmit}
+                  type="button"
+                  className="btn btn-primary"
+                >
+                  Save changes
+                </button>
+                {popupMessage && (
+                  <div className="modal fade show" style={{ display: "block" }}>
+                    <div className="modal-dialog">
+                      <div className="modal-content">
+                        <div className="modal-body">
+                          {popupMessage}
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={closePopup}
+                          >
+                            OK
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn btn-light-danger"
                 data-bs-dismiss="modal"
               >
                 Close
@@ -252,7 +220,6 @@ const AddScreen = ({ errorMessage, setErrorMessage }) => {
           </div>
         </div>
       </div>
-      {/*end::Add */}
     </div>
   );
 };

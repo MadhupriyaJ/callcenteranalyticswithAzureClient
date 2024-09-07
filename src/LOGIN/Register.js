@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+const BASE_URL = process.env.REACT_APP_API_URL;
 
 const Register = () => {
   const navigate = useNavigate();
@@ -10,13 +11,13 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [bgVideo, setBgVideo] = useState(true);
-  
+
   const register = async (e) => {
     e.preventDefault();
     console.log("Email:", email);
     console.log("Password:", passwordHash);
     try {
-      const response = await fetch("/register", {
+      const response = await fetch(`${BASE_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +135,7 @@ const Register = () => {
                       onChange={(e) => setUsername(e.target.value)}
                       required
                     />
-                    
+
                   </div>
                 </div>
                 <div class="fv-row mb-7">

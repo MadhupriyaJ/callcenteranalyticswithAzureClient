@@ -1,0 +1,512 @@
+ "@azure/ai-translation-document":"1.0.0",
+
+
+
+
+
+
+
+
+# # import libraries
+# from azure.core.credentials import AzureKeyCredential
+# from azure.ai.translation.document import DocumentTranslationClient
+
+# # create variables for your resource key, custom endpoint, sourceUrl, targetUrl, and targetLanguage
+# key = "b34a7f6e07014be69f1fd3fddaa7b3c5"
+# endpoint = "https://cssshahultranslatorservice.cognitiveservices.azure.com/"
+# sourceUri = "https://cssshahulblobstorage.blob.core.windows.net/inputdocs?sp=rl&st=2024-02-10T05:09:42Z&se=2024-02-10T13:09:42Z&sv=2022-11-02&sr=c&sig=EfuNpiu1DCgc8xsE6aeN%2FTjsSfHl9fMZwiod%2BtnbLGE%3D"
+# targetUri = "https://cssshahulblobstorage.blob.core.windows.net/outputcontainer?sp=rcw&st=2024-02-10T05:10:38Z&se=2024-02-10T13:10:38Z&sv=2022-11-02&sr=c&sig=phchTmb89jaAIWJ6r0VWJrbLLLmuvSw%2FmtjcLn1Z9FQ%3D"
+# targetLanguage = "fr"
+
+# # initialize a new instance of the DocumentTranslationClient object to interact with the Document Translation feature
+# client = DocumentTranslationClient(endpoint, AzureKeyCredential(key))
+
+# # include source and target locations and target language code for the begin translation operation
+# poller = client.begin_translation(sourceUri, targetUri, targetLanguage)
+# result = poller.result()
+
+# print("Status: {}".format(poller.status()))
+# print("Created on: {}".format(poller.details.created_on))
+# print("Last updated on: {}".format(poller.details.last_updated_on))
+# print(
+#     "Total number of translations on documents: {}".format(
+#         poller.details.documents_total_count
+#     )
+# )
+
+# print("\nOf total documents...")
+# print("{} failed".format(poller.details.documents_failed_count))
+# print("{} succeeded".format(poller.details.documents_succeeded_count))
+
+# for document in result:
+#     print("Document ID: {}".format(document.id))
+#     print("Document status: {}".format(document.status))
+#     if document.status == "Succeeded":
+#         print("Source document location: {}".format(document.source_document_url))
+#         print(
+#             "Translated document location: {}".format(document.translated_document_url)
+#         )
+#         print("Translated to language: {}\n".format(document.translated_to))
+#     else:
+#         print(
+#             "Error Code: {}, Message: {}\n".format(
+#                 document.error.code, document.error.message
+#             )
+#         )
+
+
+# from azure.storage.blob import BlobServiceClient
+# from azure.core.credentials import AzureKeyCredential
+# from azure.ai.translation.document import DocumentTranslationClient
+# import time
+# import uuid
+
+
+# # Azure Blob Storage configuration
+# AZURE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=cssshahulblobstorage;AccountKey=T5fAz2ekgvBmiuR7CopcTsnNXs0dkRt17s8xKtqvCPg320yAlLKCz0uRPjORZcCal9pZHRvl4R0L+ASt0rVfJQ==;EndpointSuffix=core.windows.net"
+# INPUT_CONTAINER_NAME = "inputdocs"
+# OUTPUT_CONTAINER_NAME = "outputcontainer"
+
+# # Azure Document Translation configuration
+# KEY = "b34a7f6e07014be69f1fd3fddaa7b3c5"
+# ENDPOINT = "https://cssshahultranslatorservice.cognitiveservices.azure.com/"
+# TARGET_LANGUAGE = "fr"
+
+# def upload_and_translate_documents(files):
+#     # Initialize Blob Service Client
+#     blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
+#     input_container_client = blob_service_client.get_container_client(INPUT_CONTAINER_NAME)
+
+#     # Initialize Document Translation Client
+#     translation_client = DocumentTranslationClient(ENDPOINT, AzureKeyCredential(KEY))
+
+#      # Generate a unique identifier for the translation job
+#     # translation_job_id = str(uuid.uuid4())
+#     # Generate a unique identifier for the translation job using the current timestamp
+#     translation_job_id = str(int(time.time()))
+
+#     # Upload files to Azure Blob Storage and prepare for translation
+#     urls = []
+#     for file in files:
+#         blob_name = file.filename
+#         blob_client = input_container_client.get_blob_client(blob_name)
+#         blob_client.upload_blob(file, overwrite=True)
+#         urls.append(blob_client.url)
+#         print('uploaded successfully',blob_name)
+
+#     # Prepare the translation job
+ 
+#     source_uris='https://cssshahulblobstorage.blob.core.windows.net/inputdocs?sp=rl&st=2024-02-13T04:06:04Z&se=2024-02-13T12:06:04Z&sv=2022-11-02&sr=c&sig=wF%2By9E1VFWH0AeypqA9Liv7Gub0zTnjFRAf6cbka5%2BY%3D'
+
+#     target_folder_name = f"{translation_job_id}_{file.filename}"  # Include the filename in the target folder name
+#     target_uri = f"https://cssshahulblobstorage.blob.core.windows.net/outputcontainer/{target_folder_name}/"
+
+
+#     # target_uri = "https://cssshahulblobstorage.blob.core.windows.net/outputcontainer?sp=racwdl&st=2024-02-13T04:01:48Z&se=2024-02-13T12:01:48Z&sv=2022-11-02&sr=c&sig=%2FmtPDpv49VU2zmtPHR3rBX2Eu7ZK0KuT807K3wBkDQQ%3D"
+
+
+#     # Start the translation job
+#     poller = translation_client.begin_translation(source_uris, target_uri, TARGET_LANGUAGE)
+#     result = poller.result()  # Blocking call to wait for the translation to complete
+
+#     # Process and return the translation results
+#     translation_results = []
+#     for document in result:
+#         if document.status == "Succeeded":
+#             translation_results.append({
+#                 "originalName": document.source_document_url,
+#                 "translatedContent": document.translated_document_url  # Simplified for demonstration
+#             })
+#             print('successfully uploaded in the target url',translation_results)
+
+#     return {"translated_documents": translation_results}
+
+# # Adjust the rest of the DocumentTranslation.py script as needed
+
+
+=============================================================================================================================================================================
+=============================================================================================================================================================================
+
+
+
+
+// import React, { useRef, useState, useEffect } from 'react';
+// import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+// import Header from '../Header/Header';
+// import SnowflakeAside from '../Aside/SnowflakeAside';
+// import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+
+// const BSTT = () => {
+//   const [subscriptionKey, setSubscriptionKey] = useState('2b75d97fa82c4dbda8c652a74f9fc3c0');
+//   const [serviceRegion, setServiceRegion] = useState('eastus');
+//   const [audioFile, setAudioFile] = useState([]);
+//   const [selectedFileName, setSelectedFileName] = useState('');
+//   const [selectedFileNames, setSelectedFileNames] = useState('');
+//   const [isPlaying, setIsPlaying] = useState(false);
+//   const fileInputRef = useRef(null);
+//   const audioPlayerRef = useRef(null);
+//   const recognizerRef = useRef(null);
+//   const [loading, setLoading] = useState(false);
+//   const BASE_URL = process.env.REACT_APP_API_URL;
+//   const [transcriptionResult, setTranscriptionResult] = useState([]);
+
+//   const [asideOpen, setAsideOpen] = useState(false);
+//   const [selectedTable, setSelectedTable] = useState("");
+//   const [tableHistory, setTableHistory] = useState([]);
+//   const [username, setUsername] = useState("");
+//   const location = useLocation();
+//   const [authenticated, setAuthenticated] = useState(true);
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     if (isPlaying && audioFile) {
+//       const audioSrc = URL.createObjectURL(audioFile);
+//       audioPlayerRef.current.src = audioSrc;
+//       audioPlayerRef.current.play();
+//     } else {
+//       audioPlayerRef.current.pause();
+//       audioPlayerRef.current.currentTime = 0;
+//     }
+//   }, [isPlaying, audioFile]);
+
+//   const startRecognition = async () => {
+//     try {
+//       if (!subscriptionKey || subscriptionKey === '') {
+//         alert('Please enter your Microsoft Cognitive Services Speech subscription key!');
+//         return;
+//       }
+  
+//       if (!audioFile || audioFile.length === 0) {
+//         alert('Please select audio files before starting recognition!');
+//         return;
+//       }
+  
+//       setLoading(true);
+//       setTranscriptionResult('');
+  
+//       // Create an array to hold the responses for each audio file
+//       const transcriptionResults = [];
+  
+//       // Send each FormData object to the server
+//       for (const formData of audioFile) {
+//         try {
+//           const response = await fetch(`${BASE_URL}/startRecognition`, {
+//             method: 'POST',
+//             body: formData,
+//           });
+  
+//           // Check if the request was successful (status code 200)
+//           if (response.ok) {
+//             console.log('Audio file sent to the server successfully');
+//             // Log additional information if needed
+//             const responseData = await response.json(); // Assuming the server sends JSON data
+//             console.log('Server response:', responseData);
+//             // Update the state with the transcription result
+//             if (responseData.transcriptions && responseData.transcriptions.length > 0) {
+//               // Access the first transcription result
+//               const transcriptionResult = responseData.transcriptions[0].transcription;
+//               transcriptionResults.push(transcriptionResult);
+//               console.log('transcription text:', transcriptionResult);
+//             } else {
+//               console.error('No transcription found in the server response');
+//             }
+//           } else {
+//             console.error('Server responded with an error:', response.status, response.statusText);
+//           }
+//         } catch (error) {
+//           console.error('Error sending audio file to server:', error);
+//         }
+//       }
+  
+//       // Concatenate the transcription results into a single string
+//       const finalTranscription = transcriptionResults.join('\n');
+//       setTranscriptionResult(finalTranscription);
+  
+//     } catch (error) {
+//       console.error('Error:', error);
+//       alert('An error occurred during recognition. Please try again.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+  
+  
+
+//   // const startRecognition = async () => {
+//   //   try {
+//   //     if (!subscriptionKey || subscriptionKey === '') {
+//   //       alert('Please enter your Microsoft Cognitive Services Speech subscription key!');
+//   //       return;
+//   //     }
+
+//   //     if (!audioFile) {
+
+//   //       alert('Please select an audio file before starting recognition!');
+//   //       return;
+//   //     }
+//   //     setLoading(true);
+//   //     setTranscriptionResult('');
+
+//   //     // Logic for sending the audio file to the server without transcription
+//   //     const formData = new FormData();
+//   //     formData.append('audioFile', audioFile);
+//   //     console.log('audioFile', audioFile);
+
+//   //     try {
+//   //       const response = await fetch(`${BASE_URL}/startRecognition`, {
+//   //         method: 'POST',
+//   //         body: formData,
+//   //       });
+
+//   //       // Check if the request was successful (status code 200)
+//   //       if (response.ok) {
+//   //         console.log('Audio file sent to the server successfully');
+//   //         // Log additional information if needed
+//   //         const responseData = await response.json(); // Assuming the server sends JSON data
+//   //         console.log('Server response:', responseData);
+//   //         // Update the state with the transcription result
+//   //         if (responseData.transcriptions && responseData.transcriptions.length > 0) {
+//   //           // Access the first transcription result
+//   //           const transcriptionResult = responseData.transcriptions[0].transcription;
+//   //           setTranscriptionResult(transcriptionResult);
+//   //           console.log('transcription text:', transcriptionResult);
+//   //         } else {
+//   //           console.error('No transcription found in the server response');
+//   //         }
+//   //       } else {
+//   //         console.error('Server responded with an error:', response.status, response.statusText);
+//   //       }
+//   //     } catch (error) {
+//   //       console.error('Error sending audio file to server:', error);
+//   //     }
+//   //   } catch (error) {
+//   //     console.error('Error:', error);
+//   //     alert('An error occurred during recognition. Please try again.');
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
+
+//   const handleFileChange = (event) => {
+//     try {
+//       const selectedFiles = event.target.files;
+  
+//       if (selectedFiles.length > 0) {
+//         const formDataArray = [];
+  
+//         // Loop through each selected file and create a FormData object for each
+//         for (let i = 0; i < selectedFiles.length; i++) {
+//           const formData = new FormData();
+//           formData.append('audioFile', selectedFiles[i]);
+//           formDataArray.push(formData);
+//         }
+  
+//         // Update the array of selected file names
+//         const fileNames = Array.from(selectedFiles).map((file) => file.name);
+//         setSelectedFileNames(fileNames);
+  
+//         // Update the state with the array of FormData objects
+//         setAudioFile(formDataArray);
+  
+//         // Close the previous SpeechRecognizer instance (if needed)
+//         if (recognizerRef.current) {
+//           recognizerRef.current.close();
+//           recognizerRef.current = null;
+//         }
+//       }
+//     } catch (error) {
+//       console.error('Error:', error);
+//       alert('An error occurred while handling the files. Please try again.');
+//     }
+//   };
+  
+
+//   //   const handleFileChange = event => {
+//   //     try{
+//   //     const selectedFiles = event.target.files;
+
+//   //     if (selectedFiles.length > 0) {
+//   //       // Log the names of each selected file
+//   //       for (let i = 0; i < selectedFiles.length; i++) {
+//   //         console.log(`Selected File ${i + 1}: ${selectedFiles[i].name}`);
+//   //       }
+
+//   //       if (selectedFiles.length > 0) {
+//   //         // Update the array of selected file names
+//   //         const fileNames = Array.from(selectedFiles).map(file => file.name);
+//   //         setSelectedFileNames(fileNames);
+
+//   //         // Use only the first file for further processing (if needed)
+//   //         const selectedFile = selectedFiles[0];
+//   //         setAudioFile(selectedFile);
+//   //         setSelectedFileName(selectedFile ? selectedFile.name : '');
+
+//   //         // Close the previous SpeechRecognizer instance
+//   //         if (recognizerRef.current) {
+//   //           recognizerRef.current.close();
+//   //           recognizerRef.current = null;
+//   //         }
+//   //       }
+//   //     }
+
+//   // }catch (error) {
+//   //   console.error('Error:', error);
+//   //   alert('An error occurred while handling the file. Please try again.');
+//   // };
+//   //   }
+
+//   const handleDeleteFile = (index) => {
+//     try {
+//       // Copy the array of selected file names
+//       const updatedFileNames = [...selectedFileNames];
+
+//       // Remove the file name at the specified index
+//       updatedFileNames.splice(index, 1);
+
+//       // Update the state with the modified array
+//       setSelectedFileNames(updatedFileNames);
+//       setAudioFile(null);
+//       setSelectedFileName('');
+//       setIsPlaying(false);
+//       if (fileInputRef.current) {
+//         fileInputRef.current.value = '';
+//       }
+//     } catch (error) {
+//       console.error('Error:', error);
+//       alert('An error occurred while delete the file. Please try again.');
+//     }
+//   };
+
+
+//   const handleStoredFileClick = () => {
+//     try {
+//       // You can add additional logic if needed
+//       console.log('Stored file clicked');
+//     } catch (error) {
+//       console.error('Error:', error);
+//       alert('An error occurred while click the file. Please try again.');
+//     }
+//   };
+
+
+//   const userName = location.state ? location.state.userName : localStorage.getItem("userName");
+
+//   useEffect(() => {
+//     setUsername(userName || "");
+//   }, [userName]);
+
+//   const handleTableSelect = (tableName) => {
+//     setTableHistory([...tableHistory, selectedTable]);
+//     setSelectedTable(tableName);
+//   };
+
+//   const handleBack = () => {
+//     const previousTable = tableHistory.pop();
+//     setSelectedTable(previousTable);
+//     setTableHistory([...tableHistory]);
+//   };
+
+//   return (
+//     <div className='flex '>
+//       <div >
+//         <SnowflakeAside asideOpen={asideOpen}
+//           selectedTable={selectedTable}
+//           setSelectedTable={setSelectedTable}
+//           onTableSelect={handleTableSelect}
+//         />
+//       </div>
+
+//       <div className='h-22 w-full '>
+//         <div>
+//           <div className='bg-gray-100 vh-100 '>
+//             <div >
+//               <Header />
+//             </div>
+
+//             <div className='container d-flex '>
+//               <div className=' rounded-lg bg-gray-100  items-center  w-500px mx-5 d-flex flex-column'>
+//                 <div className='card card-custom container mt-4 w-500px h-200px shadow-md'
+//                   style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+//                 >
+//                   <h1 className="text-4xl font-bold mb-4">Audio To Text</h1>
+//                   <div className='mb-2'>
+//                     <CloudUploadIcon fontSize="large" style={{ color: '#007bff' }} />
+//                   </div>
+//                   <div className="mb-5 custom-file-input">
+//                     <input
+//                       className="form-control border-1 pt-2 pb-2 "
+//                       type="file"
+//                       id="filePicker"
+//                       accept=".wav"
+//                       onChange={handleFileChange}
+//                       ref={fileInputRef}
+//                       multiple
+//                     />
+//                   </div>
+//                   <div
+//                     className="btn btn-primary font-weight-bold px-10 mx-auto d-block opacity-50-hover "
+//                     onClick={startRecognition}
+//                     disabled={!audioFile || loading}
+//                   >
+//                     {loading ? 'Recognition in progress...' : 'Start recognition'}
+//                     {/* Start recognition */}
+//                   </div>
+//                 </div>
+//                 <div className='card card-custom container mt-4 w-500px h-200px shadow-md' style={{ display: 'flex', alignItems: 'center' }}
+//                 >
+//                   <h1 className='mt-2'>Audio files</h1>
+//                   <div className='card card-scroll container shadow-md mt-2 mb-2 h-full bg-gray-100 ' style={{ display: 'flex', alignItems: 'center' }}>
+//                     {selectedFileNames.length > 0 ? (
+//                       <div className='flex flex-column w-full'>
+//                         {selectedFileNames.map((fileName, index) => (
+//                           <div key={index} className='mb-2 '
+//                             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+//                           >
+//                             <p className='text-primary' onClick={handleStoredFileClick}>{fileName}</p>
+//                             <button
+//                               className='btn btn-danger btn-sm'
+//                               onClick={() => handleDeleteFile(index)}
+//                               title={`Delete ${fileName}`}
+//                             >
+//                               <i className='fas fa-trash-alt'></i> Delete
+//                             </button>
+//                           </div>
+//                         ))}
+//                       </div>
+//                     ) : (
+//                       <p className='text-center my-auto '>No files here</p>
+//                     )}
+//                   </div>
+//                 </div>
+//               </div>
+//               <div className='card container h-440px w-800px shadow-md mt-4'>
+//                 <div class="card-body container card-scroll h-400px w-700px items-center justify-center mt-4 " style={{ display: 'flex', flexDirection: 'column' }}>
+//                   <audio
+//                     class="w-100"
+//                     id="plyr-audio-player"
+//                     controls
+//                     ref={audioPlayerRef}
+//                   >
+//                     <source src="" type="audio/wav" />
+//                   </audio>
+//                   <textarea
+//                     className="form-control h-300px mt-4 z-0 align-self-end"
+//                     id="phraseDiv"
+//                     readOnly
+//                     value={transcriptionResult}
+//                   />
+//                 </div>
+//               </div>
+//             </div>
+//           </div>
+//           <Outlet />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default BSTT;
+
+================================================================================================================================================================================================
+================================================================================================================================================================================================
