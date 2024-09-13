@@ -121,6 +121,8 @@
     "jquery.repeater": "*",
     "js-cookie": "*",
     "jsonwebtoken": "*",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.3",
     "jstree": "*",
     "jszip": "*",
     "lang.js": "*",
