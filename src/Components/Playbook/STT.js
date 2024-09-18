@@ -306,7 +306,7 @@ const STT = () => {
           <div className=' h-full w-full'>
             <Header />
 
-            <div className=" container grid grid-cols-2 gap-0  justify-center mt-6  h-5/6 min-w-full  ml-2  ">
+            <div className="container grid grid-cols-2 gap-0 justify-center mt-6  h-5/6 min-w-full ml-2">
 
               <div className='card container ml-72 mr-0 mt-2 h-350px max-w-xl shadow-md shadow-slate-400 col-span-1 '
               //  className="card container bg-white shadow-md p-8 rounded-lg w-full max-w-md"

@@ -3,6 +3,7 @@ import { FaSpinner, FaCheck } from 'react-icons/fa';
 import confetti from 'canvas-confetti';
 import logo from '././../../../../metronics_v8.2.0-main/src/Asset/playbook/Call center image.png'
 import DownloadComponent from './ReusableComponent/DownloadComponent';
+import Loader from './ReusableComponent/Loader';
 
 const BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -11,6 +12,7 @@ const Text = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [transcriptions, setTranscriptions] = useState({});
   const [processingStatus, setProcessingStatus] = useState({});
+  const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState('transcription'); // 'transcription' or 'sentiment'
   const filesPerPage = 10;
 
@@ -19,6 +21,7 @@ const Text = () => {
     setSelectedFiles(filesArray);
   };
   const handleFileUpload = async () => {
+    setLoading(true)
     const results = {};
     const statusUpdates = {};
 
@@ -54,12 +57,13 @@ const Text = () => {
     }
 
     setTranscriptions(results);
+    setLoading(false)
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
     });
-    alert('Process completed!');
+    // alert('Process completed!');
   };
   const handleOutputClick = () => {
     const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
@@ -101,6 +105,7 @@ const Text = () => {
     }
   }
   const handleSummaryClick = async () => {
+    setLoading(true); // Show the spinner
     const summaries = {};
   
     console.log("Transcriptions before sending:", transcriptions);
@@ -152,7 +157,7 @@ const Text = () => {
       }
       return updatedTranscriptions;
     });
-  
+    setLoading(false); // Hide the spinner after the process completes
     setViewMode('summary');
     confetti({
       particleCount: 100,
@@ -226,6 +231,7 @@ const Text = () => {
   return (
     <div className='p-4 bg-white'>
       <div className='flex justify-around items-center'>
+        
         <div className='mb-4'>
           <label htmlFor='file-input' className='bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:[background:linear-gradient(45deg,#9369c7,theme(colors.blue.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
@@ -241,14 +247,12 @@ const Text = () => {
           />
           <span className='ml-2 text-gray-500'>{selectedFiles.length} file(s) selected</span>
         </div>
-
         <div className='mb-4'>
           <button onClick={handleFileUpload} className='bg-green-500 text-white px-4 py-2 rounded mr-4 hover:[background:linear-gradient(45deg,#9369c7,theme(colors.green.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.red.500)_86%,_theme(colors.red.300)_90%,_theme(colors.red.500)_95%,_theme(colors.yellow.200/.48))_border-box]
            border-2 border-transparent animate-border '>
             Process
           </button>
         </div>
-
         <div className='mb-4 '>
           <button onClick={handleOutputClick} className='bg-red-500 text-white px-4 py-2 rounded 
           hover:[background:linear-gradient(45deg,#9369c7,theme(colors.red.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.blue.500)_86%,_theme(colors.blue.300)_90%,_theme(colors.blue.500)_94%,_theme(colors.red.200/.48))_border-box]
@@ -256,14 +260,12 @@ const Text = () => {
             Transcribe
           </button>
         </div>
-
         <div className='mb-4'>
           <button onClick={handleSentimentClick} className='bg-purple-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
             Sentiment
           </button>
         </div>
-
         <div className='mb-4'>
           <button onClick={handleClickProununciation} className='bg-orange-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
@@ -271,15 +273,21 @@ const Text = () => {
           </button>
         </div>
         <div className='mb-4'>
-          <button onClick={handleSummaryClick} className='bg-orange-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
+          <button onClick={handleSummaryClick} className='bg-cyan-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
             summary
           </button>
         </div>
+        <div className='mb-4'>
+          <button onClick={''} className='bg-pink-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
+           border-2 border-transparent animate-border'>
+            Detect Emotional Tone
+          </button>
+        </div>
+
       </div>
 
       <div className='flex flex-row gap-4 container'>
-
         <div className='grid grid-cols-2 gap-4 mt-4 mb-4 container shadow-2xl shadow-slate-500 h-[70vh] overflow-y-auto'>
           {selectedFiles.length === 0 && (
             <div className="flex justify-center items-center h-full w-full ml-96 sm:ml-40 md:ml-56">
@@ -291,7 +299,7 @@ const Text = () => {
             </div>
           )}
           
-          {currentFiles.map((file, index) => (
+         {!loading &&  currentFiles.map((file, index) => (
             <React.Fragment key={index}>
               <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md transition transform hover:-translate-y-1 flex flex-col'>
                 {indexOfFirstFile + index + 1}. {file.name}
@@ -326,15 +334,23 @@ const Text = () => {
                     '[No pronunciation available yet]'
                   )
                 ): viewMode === 'summary' ? (
-                  <div className='h-full flex flex-col items-center'>
-                    <p><strong>Abstract Summary:</strong> {transcriptions[file.name]?.abstractSummary || '[No abstract summary available]'}</p>
-                    <p><strong>Extract Summary:</strong> {transcriptions[file.name]?.extractSummary || '[No extract summary available]'}</p>
-                  </div>
+                  loading ? (
+                    <div className="flex justify-center items-center">
+                      <FaSpinner className="animate-spin text-blue-500 text-4xl" />
+                      <p className="ml-2">Summarizing, please wait...</p>
+                    </div>
+                  ) : (
+                    <div className='h-full flex flex-col items-center'>
+                      <p><strong>Abstract Summary:</strong> {transcriptions[file.name]?.abstractSummary || '[No abstract summary available]'}</p>
+                      <p><strong>Extract Summary:</strong> {transcriptions[file.name]?.extractSummary || '[No extract summary available]'}</p>
+                    </div>
+                  )
                 ) : null}
 
               </div>
             </React.Fragment>
           ))}
+          {loading && <Loader/>}
         </div>
 
       </div>
