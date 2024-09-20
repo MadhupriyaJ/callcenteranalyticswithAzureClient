@@ -13,6 +13,7 @@ const Text = () => {
   const [transcriptions, setTranscriptions] = useState({});
   const [processingStatus, setProcessingStatus] = useState({});
   const [loading, setLoading] = useState(false);
+  const [emotionResults, setEmotionResults] = useState({});
   const [viewMode, setViewMode] = useState('transcription'); // 'transcription' or 'sentiment'
   const filesPerPage = 10;
 
@@ -20,10 +21,56 @@ const Text = () => {
     const filesArray = Array.from(e.target.files);
     setSelectedFiles(filesArray);
   };
+  // const handleFileUpload = async () => {
+  //   setLoading(true)
+  //   const results = {};
+  //   const statusUpdates = {};
+
+  //   for (const file of selectedFiles) {
+  //     const formData = new FormData();
+  //     formData.append('audioFile', file);
+  //     statusUpdates[file.name] = 'loading';
+  //     setProcessingStatus({ ...statusUpdates });
+
+  //     try {
+  //       const response = await fetch(`${BASE_URL}/startRecognition`, {
+  //         method: 'POST',
+  //         body: formData,
+  //       });
+  //       const result = await response.json();
+  //       console.log('result:', result);
+
+  //       if (result.results && result.results.length > 0) {
+  //         const fileData = result.results[0];
+  //         console.log('fileData:', fileData);
+
+  //         results[fileData.fileName] = fileData;
+  //         statusUpdates[fileData.fileName] = 'done';
+  //       }
+
+  //     } catch (error) {
+  //       console.error('Error uploading file:', file.name, error);
+  //       statusUpdates[file.name] = 'error';
+  //     }
+
+
+  //     setProcessingStatus({ ...statusUpdates });
+  //   }
+
+  //   setTranscriptions(results);
+  //   setLoading(false)
+  //   confetti({
+  //     particleCount: 100,
+  //     spread: 70,
+  //     origin: { y: 0.6 },
+  //   });
+  //   // alert('Process completed!');
+  // };
   const handleFileUpload = async () => {
-    setLoading(true)
+    setLoading(true);
     const results = {};
     const statusUpdates = {};
+    const emotionResults = {};
 
     for (const file of selectedFiles) {
       const formData = new FormData();
@@ -32,39 +79,51 @@ const Text = () => {
       setProcessingStatus({ ...statusUpdates });
 
       try {
-        const response = await fetch(`${BASE_URL}/startRecognition`, {
+        // Call /startRecognition
+        const recognitionResponse = await fetch(`${BASE_URL}/startRecognition`, {
           method: 'POST',
           body: formData,
         });
-        const result = await response.json();
-        console.log('result:', result);
+        const recognitionResult = await recognitionResponse.json();
 
-        if (result.results && result.results.length > 0) {
-          const fileData = result.results[0];
-          console.log('fileData:', fileData);
-
+        if (recognitionResult.results && recognitionResult.results.length > 0) {
+          const fileData = recognitionResult.results[0];
           results[fileData.fileName] = fileData;
           statusUpdates[fileData.fileName] = 'done';
         }
 
+        // Call /predict for emotion detection
+        const predictResponse = await fetch(`http://127.0.0.1:5000/predict`, {
+          method: 'POST',
+          body: formData,
+        });
+        const predictResult = await predictResponse.json();
+
+        if (predictResult.emotion) {
+          emotionResults[file.name] = {
+            emotion: predictResult.emotion,
+            confidence: predictResult.confidence,
+          };
+        }
+
       } catch (error) {
-        console.error('Error uploading file:', file.name, error);
+        console.error('Error processing file:', file.name, error);
         statusUpdates[file.name] = 'error';
       }
-
 
       setProcessingStatus({ ...statusUpdates });
     }
 
     setTranscriptions(results);
-    setLoading(false)
+    setEmotionResults(emotionResults); // Assuming you have a state for this
+    setLoading(false);
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 },
     });
-    // alert('Process completed!');
   };
+
   const handleOutputClick = () => {
     const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
 
@@ -107,33 +166,33 @@ const Text = () => {
   const handleSummaryClick = async () => {
     setLoading(true); // Show the spinner
     const summaries = {};
-  
+
     console.log("Transcriptions before sending:", transcriptions);
-  
+
     for (const file of selectedFiles) {
       const transcriptionText = transcriptions[file.name]?.transcription;
-  
+
       if (!transcriptionText) {
         console.warn(`No transcription available for file: ${file.name}`);
         continue; // Skip this file if there's no transcription
       }
-  
+
       try {
         console.log(`Sending transcription for file: ${file.name}`, transcriptionText);
-  
+
         const response = await fetch('http://127.0.0.1:5000/api/generate-summary', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ text_documents: [transcriptionText] }),
-          
+
         });
-  
+
         console.log(`Sending transcription for file: ${file.name}`, {
           textDocuments: [transcriptionText]
         });
-        
+
         const result = await response.json();
         console.log(`Received summary for file: ${file.name}`, result);
 
@@ -142,12 +201,12 @@ const Text = () => {
           extractSummary: result.extract_summaries?.[0] || '[No extract summary available]',
           abstractSummary: result.abstract_summaries?.[0] || '[No abstract summary available]',
         };
-  
+
       } catch (error) {
         console.error('Error generating summaries for file:', file.name, error);
       }
     }
-  
+
     // Update transcriptions state to include the new summaries
     setTranscriptions(prevState => {
       const updatedTranscriptions = { ...prevState };
@@ -165,9 +224,22 @@ const Text = () => {
       origin: { y: 0.6 },
     });
   };
-  
+  const handleEmotionalToneClick = async () => {
+    try {
+      setViewMode('DetectEmotionalTone')
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    } catch (error) {
+      alert('sentiment data not available');
+    }
 
-// pagination
+  }
+
+
+  // pagination
   const indexOfLastFile = currentPage * filesPerPage;
   const indexOfFirstFile = indexOfLastFile - filesPerPage;
   const currentFiles = selectedFiles.slice(indexOfFirstFile, indexOfLastFile);
@@ -183,12 +255,14 @@ const Text = () => {
   // Set up props for DownloadComponent based on viewMode
   const fileName = viewMode === 'sentiment' ? 'sentiment_analysis' : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment' : 'transcriptions';
   const headers = viewMode === 'sentiment'
-  ? ['File Name', 'Sentiment', 'Confidence Scores (Positive)', 'Confidence Scores (Neutral)', 'Confidence Scores (Negative)']
-  : viewMode === 'PronunciationAssessment'
-  ? ['File Name', 'Accuracy Score', 'Fluency Score', 'Comprehensibility Score', 'Prosody Score', 'Pronunciation Score']
-  : viewMode === 'summary'
-  ? ['File Name', 'Abstract Summary', 'Extract Summary']
-  : ['File Name', 'Transcription'];
+    ? ['File Name', 'Sentiment', 'Confidence Scores (Positive)', 'Confidence Scores (Neutral)', 'Confidence Scores (Negative)']
+    : viewMode === 'PronunciationAssessment'
+      ? ['File Name', 'Accuracy Score', 'Fluency Score', 'Comprehensibility Score', 'Prosody Score', 'Pronunciation Score']
+      : viewMode === 'summary'
+        ? ['File Name', 'Abstract Summary', 'Extract Summary']
+        : viewMode === 'DetectEmotionalTone'
+          ? ['fileName', 'emotion', 'confidence']
+          : ['File Name', 'Transcription'];
 
   const data = selectedFiles.map((file) => {
     if (viewMode === 'sentiment') {
@@ -211,7 +285,7 @@ const Text = () => {
         assessment.prosodyScore || 'N/A',
         assessment.pronScore || 'N/A'
       ];
-    }else if (viewMode === 'summary') {
+    } else if (viewMode === 'summary') {
       const abstractSummary = transcriptions[file.name]?.abstractSummary || '[No abstract summary available]';
       const extractSummary = transcriptions[file.name]?.extractSummary || '[No extract summary available]';
       return [
@@ -219,7 +293,16 @@ const Text = () => {
         abstractSummary,
         extractSummary,
       ];
-    }  else {
+    } else if (viewMode === 'DetectEmotionalTone') {
+      const emotion = emotionResults[file.name]?.emotion || '[No emotion]'
+      const confidence = emotionResults[file.name]?.confidence || '[No emotion]';
+      return [
+        file.name,
+        emotion,
+        confidence
+      ]
+    }
+    else {
       return [
         file.name,
         transcriptions[file.name]?.transcription || 'No transcription available'
@@ -230,7 +313,7 @@ const Text = () => {
   return (
     <div className='p-4 bg-white'>
       <div className='flex justify-around items-center'>
-        
+
         <div className='mb-4'>
           <label htmlFor='file-input' className='bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:[background:linear-gradient(45deg,#9369c7,theme(colors.blue.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
@@ -278,7 +361,7 @@ const Text = () => {
           </button>
         </div>
         <div className='mb-4'>
-          <button onClick={''} className='bg-pink-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
+          <button onClick={handleEmotionalToneClick} className='bg-pink-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
             Detect Emotional Tone
           </button>
@@ -297,8 +380,8 @@ const Text = () => {
               />
             </div>
           )}
-          
-         {currentFiles.map((file, index) => (
+
+          {currentFiles.map((file, index) => (
             <React.Fragment key={index}>
               <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md transition transform hover:-translate-y-1 flex flex-col'>
                 {indexOfFirstFile + index + 1}. {file.name}
@@ -332,7 +415,7 @@ const Text = () => {
                   ) : (
                     '[No pronunciation available yet]'
                   )
-                ): viewMode === 'summary' ? (
+                ) : viewMode === 'summary' ? (
                   loading ? (
                     <div className="flex justify-center items-center">
                       <FaSpinner className="animate-spin text-blue-500 text-4xl" />
@@ -344,9 +427,27 @@ const Text = () => {
                       <p><strong>Extract Summary:</strong> {transcriptions[file.name]?.extractSummary || '[No extract summary available]'}</p>
                     </div>
                   )
-                ) : loading ? (
-                  <Loader />
-                ) : nullnull}
+                ): loading ? (
+                    <Loader />
+                  ) :
+                  viewMode === 'DetectEmotionalTone' ? (
+                    <div>
+                      {selectedFiles.map(file => (
+                        <div key={file.name}>
+                          <p>{file.name}</p>
+                          {emotionResults[file.name] ? (
+                            <div>
+                              <p>Emotion: {emotionResults[file.name].emotion}</p>
+                              <p>Confidence: {emotionResults[file.name].confidence}</p>
+                            </div>
+                          ) : (
+                            <p>No emotion data available</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                  )  : null}
 
               </div>
             </React.Fragment>
@@ -361,7 +462,7 @@ const Text = () => {
       </div>
 
       {selectedFiles.length > filesPerPage && (
-      <div className='flex justify-center mt-4'>
+        <div className='flex justify-center mt-4'>
           {pageNumbers.map((number) => (
             <button
               key={number}
