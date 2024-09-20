@@ -345,7 +345,9 @@ const Text = () => {
                       <p><strong>Extract Summary:</strong> {transcriptions[file.name]?.extractSummary || '[No extract summary available]'}</p>
                     </div>
                   )
-                ) : null}
+                ) : loading ? (
+                  <Loader />
+                ) : nullnull}
 
               </div>
             </React.Fragment>
