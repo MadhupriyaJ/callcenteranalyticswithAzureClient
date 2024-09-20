@@ -180,7 +180,6 @@ const Text = () => {
     pageNumbers.push(i);
   }
 
-  // Set up props for DownloadComponent
   // Set up props for DownloadComponent based on viewMode
   const fileName = viewMode === 'sentiment' ? 'sentiment_analysis' : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment' : 'transcriptions';
   const headers = viewMode === 'sentiment'
