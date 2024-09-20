@@ -299,7 +299,7 @@ const Text = () => {
             </div>
           )}
           
-         {!loading &&  currentFiles.map((file, index) => (
+         {currentFiles.map((file, index) => (
             <React.Fragment key={index}>
               <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md transition transform hover:-translate-y-1 flex flex-col'>
                 {indexOfFirstFile + index + 1}. {file.name}
@@ -350,7 +350,7 @@ const Text = () => {
               </div>
             </React.Fragment>
           ))}
-          {loading && <Loader/>}
+          {/* {loading && <Loader/>} */}
         </div>
 
       </div>
