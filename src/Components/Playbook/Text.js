@@ -21,51 +21,6 @@ const Text = () => {
     const filesArray = Array.from(e.target.files);
     setSelectedFiles(filesArray);
   };
-  // const handleFileUpload = async () => {
-  //   setLoading(true)
-  //   const results = {};
-  //   const statusUpdates = {};
-
-  //   for (const file of selectedFiles) {
-  //     const formData = new FormData();
-  //     formData.append('audioFile', file);
-  //     statusUpdates[file.name] = 'loading';
-  //     setProcessingStatus({ ...statusUpdates });
-
-  //     try {
-  //       const response = await fetch(`${BASE_URL}/startRecognition`, {
-  //         method: 'POST',
-  //         body: formData,
-  //       });
-  //       const result = await response.json();
-  //       console.log('result:', result);
-
-  //       if (result.results && result.results.length > 0) {
-  //         const fileData = result.results[0];
-  //         console.log('fileData:', fileData);
-
-  //         results[fileData.fileName] = fileData;
-  //         statusUpdates[fileData.fileName] = 'done';
-  //       }
-
-  //     } catch (error) {
-  //       console.error('Error uploading file:', file.name, error);
-  //       statusUpdates[file.name] = 'error';
-  //     }
-
-
-  //     setProcessingStatus({ ...statusUpdates });
-  //   }
-
-  //   setTranscriptions(results);
-  //   setLoading(false)
-  //   confetti({
-  //     particleCount: 100,
-  //     spread: 70,
-  //     origin: { y: 0.6 },
-  //   });
-  //   // alert('Process completed!');
-  // };
   const handleFileUpload = async () => {
     setLoading(true);
     const results = {};
