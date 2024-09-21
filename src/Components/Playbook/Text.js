@@ -208,7 +208,11 @@ const Text = () => {
   }
 
   // Set up props for DownloadComponent based on viewMode
-  const fileName = viewMode === 'sentiment' ? 'sentiment_analysis' : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment' : 'transcriptions';
+  const fileName = viewMode === 'sentiment' ? 'sentiment_analysis'
+   : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment'
+   :viewMode === 'summary'?'summarization'
+   :viewMode === 'DetectEmotionalTone'?'emotion detection'
+   : 'transcriptions';
   const headers = viewMode === 'sentiment'
     ? ['File Name', 'Sentiment', 'Confidence Scores (Positive)', 'Confidence Scores (Neutral)', 'Confidence Scores (Negative)']
     : viewMode === 'PronunciationAssessment'
