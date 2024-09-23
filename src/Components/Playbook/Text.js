@@ -330,7 +330,7 @@ const Text = () => {
 
       </div>
 
-      <div className='flex flex-row gap-4 container'>
+      <div className='flex flex-row gap-4 container'>      
         <div className='grid grid-cols-2 gap-4 mt-4 mb-4 container shadow-2xl shadow-slate-500 h-[70vh] overflow-y-auto'>
           {selectedFiles.length === 0 && (
             // call center logo image
