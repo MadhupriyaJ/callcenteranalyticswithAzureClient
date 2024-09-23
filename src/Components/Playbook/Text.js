@@ -209,10 +209,10 @@ const Text = () => {
 
   // Set up props for DownloadComponent based on viewMode
   const fileName = viewMode === 'sentiment' ? 'sentiment_analysis'
-   : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment'
-   :viewMode === 'summary'?'summarization'
-   :viewMode === 'DetectEmotionalTone'?'emotion detection'
-   : 'transcriptions';
+    : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment'
+      : viewMode === 'summary' ? 'summarization'
+        : viewMode === 'DetectEmotionalTone' ? 'emotion detection'
+          : 'transcriptions';
   const headers = viewMode === 'sentiment'
     ? ['File Name', 'Sentiment', 'Confidence Scores (Positive)', 'Confidence Scores (Neutral)', 'Confidence Scores (Negative)']
     : viewMode === 'PronunciationAssessment'
@@ -271,8 +271,9 @@ const Text = () => {
 
   return (
     <div className='p-4 bg-white'>
+      {/* file selection and buttons */}
       <div className='flex justify-around items-center'>
-
+        {/* select files */}
         <div className='mb-4'>
           <label htmlFor='file-input' className='bg-blue-500 text-white px-4 py-2 rounded cursor-pointer hover:[background:linear-gradient(45deg,#9369c7,theme(colors.blue.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
@@ -288,6 +289,7 @@ const Text = () => {
           />
           <span className='ml-2 text-gray-500'>{selectedFiles.length} file(s) selected</span>
         </div>
+        {/* button */}
         <div className='mb-4'>
           <button onClick={handleFileUpload} className='bg-green-500 text-white px-4 py-2 rounded mr-4 hover:[background:linear-gradient(45deg,#9369c7,theme(colors.green.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.red.500)_86%,_theme(colors.red.300)_90%,_theme(colors.red.500)_95%,_theme(colors.yellow.200/.48))_border-box]
            border-2 border-transparent animate-border '>
@@ -331,6 +333,7 @@ const Text = () => {
       <div className='flex flex-row gap-4 container'>
         <div className='grid grid-cols-2 gap-4 mt-4 mb-4 container shadow-2xl shadow-slate-500 h-[70vh] overflow-y-auto'>
           {selectedFiles.length === 0 && (
+            // call center logo image
             <div className="flex justify-center items-center h-full w-full ml-96 sm:ml-40 md:ml-56">
               <img
                 className="max-w-[100%] max-h-[100%] object-contain opacity-50 transition-opacity duration-500 hover:opacity-100"
@@ -386,9 +389,9 @@ const Text = () => {
                       <p><strong>Extract Summary:</strong> {transcriptions[file.name]?.extractSummary || '[No extract summary available]'}</p>
                     </div>
                   )
-                ): loading ? (
-                    <Loader />
-                  ) :
+                ) : loading ? (
+                  <Loader />
+                ) :
                   viewMode === 'DetectEmotionalTone' ? (
                     <div>
                       {selectedFiles.map(file => (
@@ -406,7 +409,7 @@ const Text = () => {
                       ))}
                     </div>
 
-                  )  : null}
+                  ) : null}
 
               </div>
             </React.Fragment>
