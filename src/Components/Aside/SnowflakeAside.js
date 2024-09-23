@@ -354,7 +354,7 @@ const SnowflakeAside = ({onTableSelect,setSelectedTable,selectedTable}) => {
                           <span class="menu-bullet">
                             <span class="bullet bullet-dot"></span>
                           </span>
-                          <span class="menu-title">Transcribe</span>
+                          <span class="menu-title">Speech To Text</span>
                         </a>
                       </div>
                     </div>
