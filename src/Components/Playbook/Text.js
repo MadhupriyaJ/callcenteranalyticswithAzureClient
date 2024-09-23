@@ -353,7 +353,7 @@ const Text = () => {
                   transcriptions[file.name]?.transcription || '[No transcription available yet]'
                 ) : viewMode === 'sentiment' ? (
                   transcriptions[file.name]?.sentiment && transcriptions[file.name]?.confidenceScores ? (
-                    <div className='h-full flex flex-col items-center'>
+                    <div className='h-full flex flex-col items-center justify-center'>
                       <p>Sentiment: {transcriptions[file.name].sentiment}</p> <br />
                       <p>Confidence Scores: Positive - {transcriptions[file.name].confidenceScores.positive}, Neutral - {transcriptions[file.name].confidenceScores.neutral}, Negative - {transcriptions[file.name].confidenceScores.negative}</p>
 
