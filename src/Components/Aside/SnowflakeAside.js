@@ -373,7 +373,7 @@ const SnowflakeAside = ({onTableSelect,setSelectedTable,selectedTable}) => {
                       </div>
                     </div>
                     {/* REALTIME SPEECH TO TEXT */}
-                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                    {/* <div class="menu-sub menu-sub-accordion menu-active-bg">
                       <div class="menu-item">
                         <a
                           class="menu-link"
@@ -385,7 +385,7 @@ const SnowflakeAside = ({onTableSelect,setSelectedTable,selectedTable}) => {
                           <span class="menu-title">Real Time Speech To Text</span>
                         </a>
                       </div>
-                    </div>
+                    </div> */}
                     {/* TEXT TO SPEECH */}
                     <div class="menu-sub menu-sub-accordion menu-active-bg">
                       <div class="menu-item">
