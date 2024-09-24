@@ -1,5 +1,0 @@
-# dependencies
-/node_modules
-/config
-/dbFiles/dbConfigSeed.js
-.env
