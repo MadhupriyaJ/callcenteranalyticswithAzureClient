@@ -21,18 +21,75 @@ const Text = () => {
     const filesArray = Array.from(e.target.files);
     setSelectedFiles(filesArray);
   };
+  // const handleFileUpload = async () => {
+  //   setLoading(true);
+  //   const results = {};
+  //   const statusUpdates = {};
+  //   const emotionResults = {};
+
+  //   for (const file of selectedFiles) {
+  //     const formData = new FormData();
+  //     formData.append('audioFile', file);
+  //     statusUpdates[file.name] = 'loading';
+  //     setProcessingStatus({ ...statusUpdates });
+
+  //     try {
+  //       //Call /startRecognition
+  //       const recognitionResponse = await fetch(`${BASE_URL}/startRecognition`, {
+  //         method: 'POST',
+  //         body: formData,
+  //       });
+  //       const recognitionResult = await recognitionResponse.json();
+
+  //       if (recognitionResult.results && recognitionResult.results.length > 0) {
+  //         const fileData = recognitionResult.results[0];
+  //         results[fileData.fileName] = fileData;
+  //         statusUpdates[fileData.fileName] = 'done';
+  //       }
+
+  //       // Call /predict for emotion detection
+  //       const predictResponse = await fetch(`http://127.0.0.1:5000/predict`, {
+  //         method: 'POST',
+  //         body: formData,
+  //       });
+  //       const predictResult = await predictResponse.json();
+
+  //       if (predictResult.emotion) {
+  //         emotionResults[file.name] = {
+  //           emotion: predictResult.emotion,
+  //           confidence: predictResult.confidence,
+  //         };
+  //       }
+
+  //     } catch (error) {
+  //       console.error('Error processing file:', file.name, error);
+  //       statusUpdates[file.name] = 'error';
+  //     }
+  //     setProcessingStatus({ ...statusUpdates });
+  //   }
+  //   setTranscriptions(results);
+  //   setEmotionResults(emotionResults); // Assuming you have a state for this
+  //   setLoading(false);
+  //   confetti({
+  //     particleCount: 100,
+  //     spread: 70,
+  //     origin: { y: 0.6 },
+  //   });
+  // };
+
+
   const handleFileUpload = async () => {
     setLoading(true);
     const results = {};
     const statusUpdates = {};
     const emotionResults = {};
-
+  
     for (const file of selectedFiles) {
       const formData = new FormData();
       formData.append('audioFile', file);
       statusUpdates[file.name] = 'loading';
       setProcessingStatus({ ...statusUpdates });
-
+  
       try {
         // Call /startRecognition
         const recognitionResponse = await fetch(`${BASE_URL}/startRecognition`, {
@@ -40,37 +97,38 @@ const Text = () => {
           body: formData,
         });
         const recognitionResult = await recognitionResponse.json();
-
+  
         if (recognitionResult.results && recognitionResult.results.length > 0) {
           const fileData = recognitionResult.results[0];
           results[fileData.fileName] = fileData;
           statusUpdates[fileData.fileName] = 'done';
         }
-
+  
         // Call /predict for emotion detection
         const predictResponse = await fetch(`http://127.0.0.1:5000/predict`, {
           method: 'POST',
           body: formData,
         });
         const predictResult = await predictResponse.json();
-
+  
         if (predictResult.emotion) {
           emotionResults[file.name] = {
             emotion: predictResult.emotion,
             confidence: predictResult.confidence,
           };
         }
-
+  
       } catch (error) {
         console.error('Error processing file:', file.name, error);
         statusUpdates[file.name] = 'error';
       }
-
+  
+      // Update processing status and results after each file is processed
       setProcessingStatus({ ...statusUpdates });
+      setTranscriptions(results);
+      setEmotionResults(emotionResults);
     }
-
-    setTranscriptions(results);
-    setEmotionResults(emotionResults); // Assuming you have a state for this
+  
     setLoading(false);
     confetti({
       particleCount: 100,
@@ -78,7 +136,7 @@ const Text = () => {
       origin: { y: 0.6 },
     });
   };
-
+  
   const handleOutputClick = () => {
     const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
 
@@ -327,7 +385,6 @@ const Text = () => {
             Detect Emotional Tone
           </button>
         </div>
-
       </div>
 
       <div className='flex flex-row gap-4 container'>      
@@ -394,20 +451,16 @@ const Text = () => {
                 ) :
                   viewMode === 'DetectEmotionalTone' ? (
                     <div>
-                      {selectedFiles.map(file => (
-                        <div key={file.name}>
-                          <p>{file.name}</p>
-                          {emotionResults[file.name] ? (
-                            <div>
-                              <p>Emotion: {emotionResults[file.name].emotion}</p>
-                              <p>Confidence: {emotionResults[file.name].confidence}</p>
-                            </div>
-                          ) : (
-                            <p>No emotion data available</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    {/* <p>{file.name}</p> */}
+                    {emotionResults[file.name] ? (
+                      <div className='flex flex-col items-center justify-center'>
+                        <p> <strong>Emotion:</strong> {emotionResults[file.name].emotion}</p>
+                        <p> <strong>Confidence:</strong> {emotionResults[file.name].confidence}</p>
+                      </div>
+                    ) : (
+                      <p>No emotion data available</p>
+                    )}
+                  </div>
 
                   ) : null}
 
