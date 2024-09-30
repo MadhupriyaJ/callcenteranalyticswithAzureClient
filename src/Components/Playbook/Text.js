@@ -15,9 +15,12 @@ const Text = () => {
   const [loading, setLoading] = useState(false);
   const [emotionResults, setEmotionResults] = useState({});
   const [viewMode, setViewMode] = useState('transcription'); // 'transcription' or 'sentiment'
+  const [showLogo, setShowLogo] = useState(false);
+
   const filesPerPage = 10;
 
   const handleFileChange = (e) => {
+    setShowLogo(true);
     const filesArray = Array.from(e.target.files);
     setSelectedFiles(filesArray);
   };
@@ -79,17 +82,18 @@ const Text = () => {
 
 
   const handleFileUpload = async () => {
+    setShowLogo(true); // Show the logo when processing starts
     setLoading(true);
     const results = {};
     const statusUpdates = {};
     const emotionResults = {};
-  
+
     for (const file of selectedFiles) {
       const formData = new FormData();
       formData.append('audioFile', file);
       statusUpdates[file.name] = 'loading';
       setProcessingStatus({ ...statusUpdates });
-  
+
       try {
         // Call /startRecognition
         const recognitionResponse = await fetch(`${BASE_URL}/startRecognition`, {
@@ -97,38 +101,38 @@ const Text = () => {
           body: formData,
         });
         const recognitionResult = await recognitionResponse.json();
-  
+
         if (recognitionResult.results && recognitionResult.results.length > 0) {
           const fileData = recognitionResult.results[0];
           results[fileData.fileName] = fileData;
           statusUpdates[fileData.fileName] = 'done';
         }
-  
+
         // Call /predict for emotion detection
         const predictResponse = await fetch(`http://127.0.0.1:5000/predict`, {
           method: 'POST',
           body: formData,
         });
         const predictResult = await predictResponse.json();
-  
+
         if (predictResult.emotion) {
           emotionResults[file.name] = {
             emotion: predictResult.emotion,
             confidence: predictResult.confidence,
           };
         }
-  
+
       } catch (error) {
         console.error('Error processing file:', file.name, error);
         statusUpdates[file.name] = 'error';
       }
-  
+
       // Update processing status and results after each file is processed
       setProcessingStatus({ ...statusUpdates });
       setTranscriptions(results);
       setEmotionResults(emotionResults);
     }
-  
+
     setLoading(false);
     confetti({
       particleCount: 100,
@@ -136,7 +140,7 @@ const Text = () => {
       origin: { y: 0.6 },
     });
   };
-  
+
   const handleOutputClick = () => {
     const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
 
@@ -151,6 +155,7 @@ const Text = () => {
       alert('Processing not completed yet. Please wait until all files are processed.');
     }
   };
+
   const handleSentimentClick = () => {
     try {
       setViewMode('sentiment'); // Switch to sentiment view 
@@ -163,6 +168,7 @@ const Text = () => {
       alert('sentiment data not available');
     }
   };
+
   const handleClickProununciation = () => {
     const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
     if (allProcessed) {
@@ -176,6 +182,7 @@ const Text = () => {
       alert('Processing not completed yet.please wait untill all files are processed.')
     }
   }
+
   const handleSummaryClick = async () => {
     setLoading(true); // Show the spinner
     const summaries = {};
@@ -237,6 +244,7 @@ const Text = () => {
       origin: { y: 0.6 },
     });
   };
+
   const handleEmotionalToneClick = async () => {
     try {
       setViewMode('DetectEmotionalTone')
@@ -250,7 +258,6 @@ const Text = () => {
     }
 
   }
-
 
   // pagination
   const indexOfLastFile = currentPage * filesPerPage;
@@ -355,7 +362,8 @@ const Text = () => {
           </button>
         </div>
         <div className='mb-4 '>
-          <button onClick={handleOutputClick} className='bg-red-500 text-white px-4 py-2 rounded 
+          <button onClick={handleOutputClick} 
+          className='bg-red-500 text-white px-4 py-2 rounded 
           hover:[background:linear-gradient(45deg,#9369c7,theme(colors.red.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.blue.500)_86%,_theme(colors.blue.300)_90%,_theme(colors.blue.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
             Transcribe
@@ -386,8 +394,30 @@ const Text = () => {
           </button>
         </div>
       </div>
+      {/* grid table */}
+      {/* {`flex flex-row gap-4 container relative ${showLogo ? 'bg-center bg-cover' : ''}`}
+      style={{
+        backgroundImage: showLogo ? `url(${logo})` : 'none',
+        height: '70vh', // Adjust the height as needed
+      }}
+    > */}
+      <div className={`flex flex-row gap-4 container relative`}
+        style={{
+          backgroundImage: showLogo ? `url(${logo})` : 'none',
+          backgroundPosition: 'center',
+          backgroundSize: 'cover',
+          height: '70vh', // Adjust height as needed
+        }}
+      >
 
-      <div className='flex flex-row gap-4 container'>      
+        <div className='absolute inset-0 z-0'>
+          <img
+            src={logo}
+            alt="call center logo"
+            className={`w-full h-full object-contain transition-opacity duration-500 ${showLogo ? 'opacity-10' : 'opacity-0'}`}
+          />
+        </div>
+
         <div className='grid grid-cols-2 gap-4 mt-4 mb-4 container shadow-2xl shadow-slate-500 h-[70vh] overflow-y-auto'>
           {selectedFiles.length === 0 && (
             // call center logo image
@@ -402,13 +432,13 @@ const Text = () => {
 
           {currentFiles.map((file, index) => (
             <React.Fragment key={index}>
-              <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md transition transform hover:-translate-y-1 flex flex-col'>
+              <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md transition transform hover:-translate-y-1 flex flex-col '><strong>
                 {indexOfFirstFile + index + 1}. {file.name}
                 {processingStatus[file.name] === 'loading' && <FaSpinner className='animate-spin ml-96 ' />}
                 {processingStatus[file.name] === 'done' && <FaCheck className='text-green-500 ml-96 ' />}
-                {processingStatus[file.name] === 'error' && <span className='ml-96 text-red-500'>Error</span>}
+                {processingStatus[file.name] === 'error' && <span className='ml-96 text-red-500'>Error</span>}</strong>
               </div>
-              <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md '>
+              <div className='border border-gray-300 px-4 py-2 mb-1 hover:bg-white hover:shadow-md '><strong>
                 {viewMode === 'transcription' ? (
                   transcriptions[file.name]?.transcription || '[No transcription available yet]'
                 ) : viewMode === 'sentiment' ? (
@@ -451,19 +481,19 @@ const Text = () => {
                 ) :
                   viewMode === 'DetectEmotionalTone' ? (
                     <div>
-                    {/* <p>{file.name}</p> */}
-                    {emotionResults[file.name] ? (
-                      <div className='flex flex-col items-center justify-center'>
-                        <p> <strong>Emotion:</strong> {emotionResults[file.name].emotion}</p>
-                        <p> <strong>Confidence:</strong> {emotionResults[file.name].confidence}</p>
-                      </div>
-                    ) : (
-                      <p>No emotion data available</p>
-                    )}
-                  </div>
+                      {/* <p>{file.name}</p> */}
+                      {emotionResults[file.name] ? (
+                        <div className='flex flex-col items-center justify-center'>
+                          <p> <strong>Emotion:</strong> {emotionResults[file.name].emotion}</p>
+                          <p> <strong>Confidence:</strong> {emotionResults[file.name].confidence}</p>
+                        </div>
+                      ) : (
+                        <p>No emotion data available</p>
+                      )}
+                    </div>
 
                   ) : null}
-
+</strong>
               </div>
             </React.Fragment>
           ))}
