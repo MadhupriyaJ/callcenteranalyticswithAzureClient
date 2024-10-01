@@ -182,6 +182,19 @@ const Text = () => {
       alert('Processing not completed yet.please wait untill all files are processed.')
     }
   }
+  const handleClickPIIentity = () => {
+    const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
+    if (allProcessed) {
+      setViewMode('TopicModeling')
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    } else {
+      alert('Processing not completed yet.please wait untill all files are processed.')
+    }
+  }
 
   const handleSummaryClick = async () => {
     setLoading(true); // Show the spinner
@@ -277,7 +290,8 @@ const Text = () => {
     : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment'
       : viewMode === 'summary' ? 'summarization'
         : viewMode === 'DetectEmotionalTone' ? 'emotion detection'
-          : 'transcriptions';
+          : viewMode === "TopicModeling" ? 'topic'
+            : 'transcriptions';
   const headers = viewMode === 'sentiment'
     ? ['File Name', 'Sentiment', 'Confidence Scores (Positive)', 'Confidence Scores (Neutral)', 'Confidence Scores (Negative)']
     : viewMode === 'PronunciationAssessment'
@@ -286,7 +300,10 @@ const Text = () => {
         ? ['File Name', 'Abstract Summary', 'Extract Summary']
         : viewMode === 'DetectEmotionalTone'
           ? ['fileName', 'emotion', 'confidence']
-          : ['File Name', 'Transcription'];
+          : viewMode === "TopicModeling"
+            ? ['fileName', 'Topics']
+            : ['File Name', 'Transcription'];
+
 
   const data = selectedFiles.map((file) => {
     if (viewMode === 'sentiment') {
@@ -325,6 +342,12 @@ const Text = () => {
         emotion,
         confidence
       ]
+    } else if (viewMode === "TopicModeling") {
+      const topic = transcriptions[file.name]?.piiEntities || '[No Entities]'
+      return [
+        file.name,
+        topic
+      ]
     }
     else {
       return [
@@ -362,8 +385,8 @@ const Text = () => {
           </button>
         </div>
         <div className='mb-4 '>
-          <button onClick={handleOutputClick} 
-          className='bg-red-500 text-white px-4 py-2 rounded 
+          <button onClick={handleOutputClick}
+            className='bg-red-500 text-white px-4 py-2 rounded 
           hover:[background:linear-gradient(45deg,#9369c7,theme(colors.red.500)_50%,#c9bdd9)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.blue.500)_86%,_theme(colors.blue.300)_90%,_theme(colors.blue.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
             Transcribe
@@ -391,6 +414,12 @@ const Text = () => {
           <button onClick={handleEmotionalToneClick} className='bg-pink-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
             Detect Emotional Tone
+          </button>
+        </div>
+        <div className='mb-4'>
+          <button onClick={handleClickPIIentity} className='bg-red-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
+           border-2 border-transparent animate-border'>
+            Topic modeling
           </button>
         </div>
       </div>
@@ -492,8 +521,25 @@ const Text = () => {
                       )}
                     </div>
 
-                  ) : null}
-</strong>
+                  ) :
+                    viewMode === "TopicModeling" ? (
+                      <div className='flex flex-col justify-center items-center'>
+                        <p><strong className=''>Topics:</strong></p>
+                        {Array.isArray(transcriptions[file.name]?.piiEntities) ? (
+                          transcriptions[file.name].piiEntities.map((entity, index) => (
+                            <div className='flex justify-between items-center  w-1/2'> 
+                            <p key={index}>text : {entity.text}</p>
+                            <p key={index}>category : {entity.category}</p>
+                            </div>
+                          
+                          ))
+                        ) : (
+                          <p>No entities available</p>
+                        )}
+                      </div>
+                    )
+                      : null}
+              </strong>
               </div>
             </React.Fragment>
           ))}
