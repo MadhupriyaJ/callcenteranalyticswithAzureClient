@@ -401,7 +401,7 @@ const Text = () => {
         height: '70vh', // Adjust the height as needed
       }}
     > */}
-      <div className={`flex flex-row gap-4 container relative`}
+      <div className={`flex flex-row gap-4 container relative `}
         style={{
           backgroundImage: showLogo ? `url(${logo})` : 'none',
           backgroundPosition: 'center',
@@ -414,16 +414,16 @@ const Text = () => {
           <img
             src={logo}
             alt="call center logo"
-            className={`w-full h-full object-contain transition-opacity duration-500 ${showLogo ? 'opacity-10' : 'opacity-0'}`}
+            className={`w-full h-full object-contain transition-opacity duration-500 ${showLogo ? 'opacity-20' : 'opacity-0'}`}
           />
         </div>
 
-        <div className='grid grid-cols-2 gap-4 mt-4 mb-4 container shadow-2xl shadow-slate-500 h-[70vh] overflow-y-auto'>
+        <div className='grid grid-cols-2 gap-4 mt-4 mb-4 container shadow-2xl shadow-slate-500 h-[70vh] overflow-y-auto backdrop-blur-sm'>
           {selectedFiles.length === 0 && (
             // call center logo image
             <div className="flex justify-center items-center h-full w-full ml-96 sm:ml-40 md:ml-56">
               <img
-                className="max-w-[100%] max-h-[100%] object-contain opacity-50 transition-opacity duration-500 hover:opacity-100"
+                className="max-w-[100%] max-h-[100%] object-contain opacity-50 transition-opacity duration-500 hover:opacity-100  contrast-100"
                 src={logo}
                 alt="call center logo"
               />
