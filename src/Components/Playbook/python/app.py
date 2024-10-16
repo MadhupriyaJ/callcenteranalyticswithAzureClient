@@ -117,6 +117,7 @@ from extact import generateSummary, text_analytics_client
 from DocumentTranslation import upload_and_translate_documents,generate_file_url
 import logging
 from predict_only import predict   # Assuming this function processes the audio and returns predictions
+from Topics import process_topic_modeling
 import tensorflow as tf
 import numpy as np
 import librosa
@@ -227,24 +228,62 @@ def predict():
         predicted_emotion = emotion_dict[predicted_label[0]]
         print('predicted emotion:',predicted_emotion)
         print('confidence:',prediction)
-      
-
         return jsonify({
             'filename': file.filename,
             'emotion': predicted_emotion,
             'confidence': float(np.max(prediction))
         })
-    
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+
+
+# @app.route('/topic-modeling', methods=['POST'])  # Change to POST
+# def topic_modeling():
+#     # Get text documents from the request body
+#     data = request.get_json()
+#     text_documents = data.get('textDocuments', [])
+#     print("Received text documents:", text_documents)
+    
+#     if not text_documents:
+#         return jsonify({"error": "No text documents provided."}), 400
+    
+#     # Process topic modeling
+#     try:
+#         topics = process_topic_modeling(text_documents)
+#         print("Topics")
+#         print(topics)
+#         return jsonify({"topics": topics}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
+@app.route('/topic-modeling',methods=['POST'])
+def topic_modeling():
+     # Get text documents from the request body
+    data = request.get_json()
+    text_documents = data.get('textDocuments',[])
+    print("Received text documents:",text_documents)
+
+    if not text_documents:
+        return jsonify({"error" : "No text documents provided."}),400
+     # Process topic modeling for each file separately
+    try:
+        topics_per_file = {}
+        for i,text_document in enumerate(text_documents):
+            topics = process_topic_modeling([text_document]) # Process each document individually
+            topics_per_file[f"File_{i+1}"] = topics #Use a unique key per file or use actual file names if available
+
+        return jsonify(topics_per_file),200
+    except Exception as e:
+        return jsonify({"error":str(e)}),500 
+
 
 @app.route('/api/generate-summary', methods=['POST'])
 
 def api_generate_summary():
     data = request.get_json()
     text_documents = data.get('text_documents', [])
-    print("textDocuments:",text_documents)
+    print("textDocuments for summary:",text_documents)
     # Ensure all documents are in the correct format
     documents = [{'id': str(idx), 'language': 'en', 'text': doc} for idx, doc in enumerate(text_documents)]
 
@@ -271,7 +310,8 @@ def translate_documents():
     except Exception as e:
         logging.error('Failed to translate documents', exc_info=True)
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route('/download-file/<path:file_path>', methods=['GET'])
 def download_file(file_path):
     file_url = generate_file_url(file_path) 

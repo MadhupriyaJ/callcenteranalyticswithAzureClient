@@ -98,7 +98,7 @@ const Register1 = () => {
             <a href="../../demo1/dist/index.html" class="mb-12">
               <img
                 alt="Logo"
-                src="https://cdn-ehkcj.nitrocdn.com/jNvWlyDKiTewoPhgmESQyjXHnnzLhaun/assets/images/optimized/rev-95b4f45/www.techvista.com/wp-content/themes/systems/assets/images/logo-techvista.png"
+                src=""
                 class="h-40px bg-danger rounded-lg px-4  "
               />
             </a>

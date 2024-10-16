@@ -14,6 +14,7 @@ const Text = () => {
   const [processingStatus, setProcessingStatus] = useState({});
   const [loading, setLoading] = useState(false);
   const [emotionResults, setEmotionResults] = useState({});
+  const [topicModel, setTopicModel] = useState({})
   const [viewMode, setViewMode] = useState('transcription'); // 'transcription' or 'sentiment'
   const [showLogo, setShowLogo] = useState(false);
 
@@ -133,6 +134,26 @@ const Text = () => {
       setEmotionResults(emotionResults);
     }
 
+
+    // After processing all files, send transcriptions to /topic-modeling
+    try {
+      // const textDocuments = Object.values(results).map(fileData => fileData.transcription);
+      const topicModelingResponse = await fetch(`http://127.0.0.1:5000/topic-modeling`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ textDocuments: Object.values(results) }),
+      });
+      const topicModelingResult = await topicModelingResponse.json();
+      console.log('Topic Modeling Result:', topicModelingResult);
+
+      // Store the topic modeling result in the topicModel state
+      setTopicModel(topicModelingResult); // Ensure the response is stored in topicModel state
+    } catch (error) {
+      console.error('Error sending to topic modeling:', error);
+    }
+
     setLoading(false);
     confetti({
       particleCount: 100,
@@ -185,7 +206,7 @@ const Text = () => {
   const handleClickPIIentity = () => {
     const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
     if (allProcessed) {
-      setViewMode('TopicModeling')
+      setViewMode('PII')
       confetti({
         particleCount: 100,
         spread: 70,
@@ -272,6 +293,22 @@ const Text = () => {
 
   }
 
+  const handleClickTopicModel = async () => {
+    const allProcessed = selectedFiles.every(file => processingStatus[file.name] === 'done');
+
+    if (allProcessed) {
+      setViewMode('topicModel');  // Set the viewMode to topicModel for display
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+    } else {
+      alert('Processing not completed yet. Please wait until all files are processed.');
+    }
+  };
+
+
   // pagination
   const indexOfLastFile = currentPage * filesPerPage;
   const indexOfFirstFile = indexOfLastFile - filesPerPage;
@@ -290,8 +327,9 @@ const Text = () => {
     : viewMode === 'PronunciationAssessment' ? 'pronunciation_assessment'
       : viewMode === 'summary' ? 'summarization'
         : viewMode === 'DetectEmotionalTone' ? 'emotion detection'
-          : viewMode === "TopicModeling" ? 'topic'
-            : 'transcriptions';
+          : viewMode === "PII" ? 'topic'
+            : viewMode === 'topicModel' ? 'topic_modeling_results'
+              : 'transcriptions';
   const headers = viewMode === 'sentiment'
     ? ['File Name', 'Sentiment', 'Confidence Scores (Positive)', 'Confidence Scores (Neutral)', 'Confidence Scores (Negative)']
     : viewMode === 'PronunciationAssessment'
@@ -300,9 +338,10 @@ const Text = () => {
         ? ['File Name', 'Abstract Summary', 'Extract Summary']
         : viewMode === 'DetectEmotionalTone'
           ? ['fileName', 'emotion', 'confidence']
-          : viewMode === "TopicModeling"
+          : viewMode === "PII"
             ? ['fileName', 'Topics']
-            : ['File Name', 'Transcription'];
+            : viewMode === 'topicModel' ? ['File Name', 'Topics']
+              : ['File Name', 'Transcription'];
 
 
   const data = selectedFiles.map((file) => {
@@ -342,14 +381,16 @@ const Text = () => {
         emotion,
         confidence
       ]
-    } else if (viewMode === "TopicModeling") {
+    } else if (viewMode === "PII") {
       const topic = transcriptions[file.name]?.piiEntities || '[No Entities]'
       return [
         file.name,
         topic
       ]
-    }
-    else {
+    } else if (viewMode === 'topicModel') {
+      const topics = topicModel[file.name] || '[No Topics]';
+      return [file.name, Array.isArray(topics) ? topics.join(', ') : '[No Topics]'];
+    } else {
       return [
         file.name,
         transcriptions[file.name]?.transcription || 'No transcription available'
@@ -419,10 +460,17 @@ const Text = () => {
         <div className='mb-4'>
           <button onClick={handleClickPIIentity} className='bg-red-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
            border-2 border-transparent animate-border'>
-            Topic modeling
+            PII
+          </button>
+        </div>
+        <div className='mb-4'>
+          <button onClick={handleClickTopicModel} className='bg-red-500 text-white px-4 py-2 rounded hover:[background:linear-gradient(45deg,#7fb9e3,theme(colors.purple.500)_50%,#99e8a0)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.yellow.200/.48)_80%,_theme(colors.pink.500)_86%,_theme(colors.pink.300)_90%,_theme(colors.pink.500)_94%,_theme(colors.red.200/.48))_border-box]
+           border-2 border-transparent animate-border'>
+            Topic Modeling
           </button>
         </div>
       </div>
+
       {/* grid table */}
       {/* {`flex flex-row gap-4 container relative ${showLogo ? 'bg-center bg-cover' : ''}`}
       style={{
@@ -432,10 +480,7 @@ const Text = () => {
     > */}
       <div className={`flex flex-row gap-4 container relative `}
         style={{
-          backgroundImage: showLogo ? `url(${logo})` : 'none',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          height: '70vh', // Adjust height as needed
+          backgroundImage: showLogo ? `url(${logo})` : 'none', backgroundPosition: 'center', backgroundSize: 'cover', height: '70vh', // Adjust height as needed
         }}
       >
 
@@ -522,23 +567,45 @@ const Text = () => {
                     </div>
 
                   ) :
-                    viewMode === "TopicModeling" ? (
+                    viewMode === "PII" ? (
                       <div className='flex flex-col justify-center items-center'>
                         <p><strong className=''>Topics:</strong></p>
                         {Array.isArray(transcriptions[file.name]?.piiEntities) ? (
                           transcriptions[file.name].piiEntities.map((entity, index) => (
-                            <div className='flex justify-between items-center  w-1/2'> 
-                            <p key={index}>text : {entity.text}</p>
-                            <p key={index}>category : {entity.category}</p>
+                            <div className='flex justify-between items-center  w-1/2'>
+                              <p key={index}>text : {entity.text}</p>
+                              <p key={index}>category : {entity.category}</p>
                             </div>
-                          
+
                           ))
                         ) : (
                           <p>No entities available</p>
                         )}
                       </div>
-                    )
-                      : null}
+                    ) :
+                      viewMode === 'topicModel' ? (
+                        <div className="mt-4">
+                          <h3 className="text-xl font-bold mb-2">Topic Modeling Results</h3>
+                          <div className="border border-gray-300 p-4 rounded-lg shadow">
+                            {Object.keys(topicModel).length === 0 ? (
+                              <p>No topics available. Please ensure the files are processed correctly.</p>
+                            ) : (
+                              <ul>
+                                {Object.entries(topicModel).map(([fileName, topics], index) => (
+                                  <li key={index} className="mb-2">
+                                    <strong>{fileName}:</strong>
+                                    <ul className="ml-4">
+                                      {topics.map((topic, i) => (
+                                      <strong><li key={i}>{topic}</li></strong>  
+                                      ))}
+                                    </ul>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
               </strong>
               </div>
             </React.Fragment>

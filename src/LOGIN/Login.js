@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import logo from '../Asset/playbook/snowflake-logo.png'
 const BASE_URL = process.env.REACT_APP_API_URL;
 
 const Login = ({ setAuthenticated }) => {
@@ -149,32 +150,20 @@ const Login = ({ setAuthenticated }) => {
   };
 
   return (
-    <div class="d-flex flex-column flex-root">
-      <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed ">
-        <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20 ">
-          {/* <a href="../../demo1/dist/index.html" class="mb-12">
-            <img
-              alt="Logo"
-              src="https://cdn-ehkcj.nitrocdn.com/jNvWlyDKiTewoPhgmESQyjXHnnzLhaun/assets/images/optimized/rev-95b4f45/www.techvista.com/wp-content/themes/systems/assets/images/logo-techvista.png"
-              class="h-40px bg-danger rounded-lg px-4  "
-            />
-          </a> */}
-          <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
-            <form
-              class="form w-100"
-              novalidate="novalidate"
-              id="kt_sign_in_form"
-              action="#"
-            >
+    <div class="d-flex flex-column flex-root ">
+      <div class="d-flex  flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed ">
+        <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20  ">
+          <a href="../../demo1/dist/index.html" class="mb-12">
+            <img alt="Logo" src={logo} class="h-40px  rounded-lg px-28"/>
+          </a>
+          <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto ">
+            <form class="form w-100 " novalidate="novalidate" id="kt_sign_in_form" action="#" >
               <div class="text-center mb-10">
                 <h1 class="text-dark mb-3 font-semibold text-3xl">Sign In</h1>
 
                 <div class="text-gray-400 fw-bold fs-4">
                   New Here?
-                  <a
-                    href="/register"
-                    class="link-primary pl-2 fw-bolder"
-                  >
+                  <a href="/register" class="link-primary pl-2 fw-bolder" >
                     Create an Account
                   </a>
                 </div>
@@ -183,15 +172,8 @@ const Login = ({ setAuthenticated }) => {
               <div class="fv-row mb-10">
                 <label class="form-label fs-6 fw-bolder text-dark">Email</label>
 
-                <input
-                  class="form-control form-control-lg form-control-solid"
-                  type="email"
-                  name="email"
-                  id="email"
-                  autocomplete="off"
-                  placeholder="johndoe@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                <input class="form-control form-control-lg form-control-solid" type="email" name="email" id="email"
+                  autocomplete="off" placeholder="johndoe@company.com" value={email} onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -210,23 +192,12 @@ const Login = ({ setAuthenticated }) => {
                   </a>
                 </div>
 
-                <input
-                  class="form-control form-control-lg form-control-solid"
-                  type="password"
-                  name="password"
-                  id="password"
-                  autocomplete="off"
-                  placeholder="••••••••"
-                  value={passwordHash}
-                  onChange={(e) => setPasswordHash(e.target.value)}
-                  required
-                />
+                <input class="form-control form-control-lg form-control-solid" type="password" name="password" id="password"
+                  autocomplete="off" placeholder="••••••••" value={passwordHash} onChange={(e) => setPasswordHash(e.target.value)} required />
               </div>
 
               <div class="text-center">
-                <button
-                  type="submit"
-                  id="kt_sign_in_submit"
+                <button type="submit" id="kt_sign_in_submit"
                   class="btn btn-lg btn-primary w-100 mb-5"
                   onClick={signIn}
                 >
@@ -241,15 +212,8 @@ const Login = ({ setAuthenticated }) => {
                   or
                 </div>
 
-                <a
-                  href="#"
-                  class="btn btn-flex flex-center btn-light btn-lg w-100 mb-5"
-                >
-                  <img
-                    alt="Logo"
-                    src="assets/media/svg/brand-logos/google-icon.svg"
-                    class="h-20px me-3"
-                  />
+                <a href="#" class="btn btn-flex flex-center btn-light btn-lg w-100 mb-5" >
+                  <img alt="Logo" src="assets/media/svg/brand-logos/google-icon.svg" class="h-20px me-3" />
                   Continue with Google
                 </a>
               </div>
