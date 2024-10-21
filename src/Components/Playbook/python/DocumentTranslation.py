@@ -27,8 +27,8 @@ OUTPUT_CONTAINER_NAME = "outputcontainer"
 # KEY = "b34a7f6e07014be69f1fd3fddaa7b3c5"
 # ENDPOINT = "https://cssshahultranslatorservice.cognitiveservices.azure.com/"
 # NEW KEY
-KEY = "2a12bff99d754c20a051d66c72c242cf"
-ENDPOINT = "https://translatorforcallcenter.cognitiveservices.azure.com/"
+KEY = "89e65c3bc933478b8412ea613e159948"
+ENDPOINT = "https://translatorforthottaneketta.cognitiveservices.azure.com/"
 
 def upload_and_translate_documents(files,languages):
     # Initialize Blob Service Client

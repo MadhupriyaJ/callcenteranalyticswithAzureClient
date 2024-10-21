@@ -38,8 +38,8 @@
 from azure.core.credentials import AzureKeyCredential
 from azure.ai.textanalytics import TextAnalyticsClient
 
-text_analytics_endpoint = "https://callcenterlanguageanalysis2.cognitiveservices.azure.com/"
-text_analytics_key = "51d68ac30cc14a88937f9a0975e84ca3"
+text_analytics_endpoint = "https://languageforthottaneketta.cognitiveservices.azure.com/"
+text_analytics_key = "e805b7a03c7b4f5cae34c26b8f70e9a8"
 
 text_analytics_client = TextAnalyticsClient(endpoint=text_analytics_endpoint, credential=AzureKeyCredential(text_analytics_key))
 
